@@ -1,0 +1,80 @@
+---
+Language: Cpp
+
+BasedOnStyle: LLVM
+
+Standard: Latest
+
+
+# Indentation
+
+
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+
+
+# Braces
+
+
+BreakBeforeBraces: Allman
+
+
+# Columns
+
+
+ColumnLimit: 100
+
+
+# Pointers & References
+
+
+PointerAlignment: Left
+ReferenceAlignment: Left
+
+
+# Includes
+
+
+SortIncludes: Never
+
+
+# Namespaces
+
+
+NamespaceIndentation: All
+
+
+# Functions
+
+
+AllowShortFunctionsOnASingleLine: None
+
+
+# Control Statements
+
+
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+
+
+# Constructor Initializers
+
+BreakConstructorInitializers: BeforeComma
+PackConstructorInitializers: Never
+
+
+# Empty Lines
+
+
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 1
+
+
+# Misc
+
+SpaceBeforeParens: ControlStatements
+SpacesInParentheses: false
+SpaceInEmptyParentheses: false
+
+...
