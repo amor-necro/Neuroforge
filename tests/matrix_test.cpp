@@ -40,6 +40,8 @@ static_assert(noexcept(std::declval<Matrix<int>&>().cbegin()));
 static_assert(noexcept(std::declval<Matrix<int>&>().cend()));
 static_assert(noexcept(std::declval<Matrix<int>&>().crbegin()));
 static_assert(noexcept(std::declval<Matrix<int>&>().crend()));
+static_assert(noexcept(std::declval<Matrix<int>&>().capacity()));
+static_assert(noexcept(std::declval<Matrix<int>&>().max_size()));
 
 
 // Default Constructor
@@ -886,6 +888,201 @@ void test_single_element_iterators()
 }
 
 
+// Capacity: resize()
+
+
+void test_resize_grow()
+{
+    Matrix<int> A(2, 2, 0);
+    A.resize(3, 3);
+    assert(A.rows() == 3);
+    assert(A.cols() == 3);
+    assert(A.size() == 9);
+}
+
+
+void test_resize_shrink()
+{
+    Matrix<int> A(3, 3, 1);
+    A.resize(2, 2);
+    assert(A.rows() == 2);
+    assert(A.cols() == 2);
+    assert(A.size() == 4);
+}
+
+
+void test_resize_same_dimensions()
+{
+    Matrix<int> A(2, 2, 7);
+    A.resize(2, 2);
+    assert(A.rows() == 2);
+    assert(A.cols() == 2);
+    assert(A.size() == 4);
+    assert(A(0, 0) == 7);
+}
+
+
+void test_resize_grow_preserves_existing_elements()
+{
+    Matrix<int> A(2, 2, 0);
+    A(0, 0) = 1;
+    A(0, 1) = 2;
+    A(1, 0) = 3;
+    A(1, 1) = 4;
+    A.resize(3, 2, 0);
+    assert(A(0, 0) == 1);
+    assert(A(0, 1) == 2);
+    assert(A(1, 0) == 3);
+    assert(A(1, 1) == 4);
+    assert(A.size() == 6);
+}
+
+
+void test_resize_grow_default_initializes_new_elements()
+{
+    Matrix<int> A(2, 2, 7);
+    A.resize(3, 2);
+    assert(A.size() == 6);
+    assert(A(0, 0) == 7);
+    assert(A(0, 1) == 7);
+    assert(A(1, 0) == 7);
+    assert(A(1, 1) == 7);
+    assert(A(2, 0) == 0);
+    assert(A(2, 1) == 0);
+}
+
+
+void test_resize_shrink_discards_excess_elements()
+{
+    Matrix<int> A(3, 2, 0);
+    for (std::size_t i = 0; i < A.size(); ++i)
+    {
+        A.data()[i] = static_cast<int>(i + 1);
+    }
+    A.resize(2, 2);
+    assert(A.size() == 4);
+    assert(A(0, 0) == 1);
+    assert(A(0, 1) == 2);
+    assert(A(1, 0) == 3);
+    assert(A(1, 1) == 4);
+}
+
+
+void test_resize_changing_cols_preserves_vector_indices()
+{
+    Matrix<int> A(2, 2, 0);
+    A(0, 0) = 1;
+    A(0, 1) = 2;
+    A(1, 0) = 3;
+    A(1, 1) = 4;
+    A.resize(3, 3, 0);
+    assert(A.data()[0] == 1);
+    assert(A.data()[1] == 2);
+    assert(A.data()[2] == 3);
+    assert(A.data()[3] == 4);
+}
+
+
+void test_resize_empty_to_nonempty()
+{
+    Matrix<int> A;
+    A.resize(2, 2, 5);
+    assert(A.rows() == 2);
+    assert(A.cols() == 2);
+    assert(A.size() == 4);
+    assert(A(0, 0) == 5);
+}
+
+
+void test_resize_nonempty_to_empty()
+{
+    Matrix<int> A(2, 2, 1);
+    A.resize(0, 0);
+    assert(A.rows() == 0);
+    assert(A.cols() == 0);
+    assert(A.size() == 0);
+    assert(A.empty());
+}
+
+
+// Capacity: reserve()
+
+
+void test_reserve_increases_capacity()
+{
+    Matrix<int> A(2, 2, 0);
+    A.reserve(100);
+    assert(A.capacity() >= 100);
+}
+
+
+void test_reserve_does_not_change_size()
+{
+    Matrix<int> A(2, 3, 5);
+    std::size_t old_rows = A.rows();
+    std::size_t old_cols = A.cols();
+    std::size_t old_size = A.size();
+    A.reserve(100);
+    assert(A.rows() == old_rows);
+    assert(A.cols() == old_cols);
+    assert(A.size() == old_size);
+    assert(A(0, 0) == 5);
+}
+
+
+void test_reserve_zero_is_noop()
+{
+    Matrix<int> A(2, 2, 1);
+    A.reserve(0);
+    assert(A.rows() == 2);
+    assert(A.cols() == 2);
+    assert(A.size() == 4);
+    assert(A(0, 0) == 1);
+}
+
+
+// Capacity: capacity()
+
+
+void test_capacity_after_construction()
+{
+    Matrix<int> A(2, 3, 0);
+    assert(A.capacity() >= A.size());
+}
+
+
+void test_capacity_after_reserve()
+{
+    Matrix<int> A(2, 2, 0);
+    A.reserve(50);
+    assert(A.capacity() >= 50);
+}
+
+
+// Capacity: shrink_to_fit()
+
+
+void test_shrink_to_fit_preserves_elements()
+{
+    Matrix<int> A(10, 10, 7);
+    A.shrink_to_fit();
+    assert(A.size() == 100);
+    assert(A(0, 0) == 7);
+    assert(A(9, 9) == 7);
+}
+
+
+// Capacity: max_size()
+
+
+void test_max_size_is_positive()
+{
+    Matrix<int> A(2, 2, 0);
+    assert(A.max_size() > 0);
+    assert(A.max_size() >= A.size());
+}
+
+
 int main()
 {
     test_default_constructor();
@@ -942,6 +1139,21 @@ int main()
     test_const_reverse_iteration();
     test_empty_matrix_iterators();
     test_single_element_iterators();
+    test_resize_grow();
+    test_resize_shrink();
+    test_resize_same_dimensions();
+    test_resize_grow_preserves_existing_elements();
+    test_resize_grow_default_initializes_new_elements();
+    test_resize_shrink_discards_excess_elements();
+    test_resize_empty_to_nonempty();
+    test_resize_nonempty_to_empty();
+    test_reserve_increases_capacity();
+    test_reserve_does_not_change_size();
+    test_reserve_zero_is_noop();
+    test_capacity_after_construction();
+    test_capacity_after_reserve();
+    test_shrink_to_fit_preserves_elements();
+    test_max_size_is_positive();
 
     std::cout << "All Matrix tests passed!\n";
     return 0;

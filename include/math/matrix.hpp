@@ -81,6 +81,23 @@ public:
     void swap(Matrix& other) noexcept;
 
 
+    // Capacity
+
+    void resize(std::size_t rows, std::size_t cols);
+
+    void resize(std::size_t rows, std::size_t cols, const T& value);
+
+    void reserve(std::size_t capacity);
+
+    [[nodiscard]]
+    std::size_t capacity() const noexcept;
+
+    void shrink_to_fit();
+
+    [[nodiscard]]
+    std::size_t max_size() const noexcept;
+
+
     // Comparison
 
     bool operator==(const Matrix& other) const;

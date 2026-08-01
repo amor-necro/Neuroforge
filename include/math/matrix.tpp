@@ -139,6 +139,50 @@ void Matrix<T>::swap(Matrix& other) noexcept
 }
 
 //==================================================
+// Capacity Implementations
+//==================================================
+
+template<typename T>
+void Matrix<T>::resize(std::size_t rows, std::size_t cols)
+{
+    data_.resize(rows * cols);
+    rows_ = rows;
+    cols_ = cols;
+}
+
+template<typename T>
+void Matrix<T>::resize(std::size_t rows, std::size_t cols, const T& value)
+{
+    data_.resize(rows * cols, value);
+    rows_ = rows;
+    cols_ = cols;
+}
+
+template<typename T>
+void Matrix<T>::reserve(std::size_t capacity)
+{
+    data_.reserve(capacity);
+}
+
+template<typename T>
+std::size_t Matrix<T>::capacity() const noexcept
+{
+    return data_.capacity();
+}
+
+template<typename T>
+void Matrix<T>::shrink_to_fit()
+{
+    data_.shrink_to_fit();
+}
+
+template<typename T>
+std::size_t Matrix<T>::max_size() const noexcept
+{
+    return data_.max_size();
+}
+
+//==================================================
 // Comparison Implementations
 //==================================================
 
