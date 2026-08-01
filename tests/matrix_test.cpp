@@ -1,5 +1,6 @@
 #include <cassert>
 #include <iostream>
+#include <stdexcept>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -18,6 +19,8 @@ static_assert(std::is_move_assignable_v<Matrix<int>>);
 static_assert(std::is_nothrow_move_constructible_v<Matrix<int>>);
 static_assert(std::is_nothrow_move_assignable_v<Matrix<int>>);
 static_assert(std::is_destructible_v<Matrix<int>>);
+static_assert(noexcept(std::declval<Matrix<int>&>().clear()));
+static_assert(noexcept(std::declval<Matrix<int>&>().swap(std::declval<Matrix<int>&>())));
 
 
 // Default Constructor
@@ -261,6 +264,425 @@ void test_move_assignment_resizes()
 }
 
 
+// Element Access: data()
+
+
+void test_data_contiguous_row_major()
+{
+    Matrix<int> A(2, 3, 0);
+
+    for (std::size_t k = 0; k < A.size(); ++k)
+    {
+        A.data()[k] = static_cast<int>(k);
+    }
+
+    assert(A(0, 0) == 0);
+    assert(A(0, 1) == 1);
+    assert(A(0, 2) == 2);
+    assert(A(1, 0) == 3);
+    assert(A(1, 1) == 4);
+    assert(A(1, 2) == 5);
+}
+
+
+void test_data_matches_operator_paren()
+{
+    Matrix<int> A(2, 3, 0);
+
+    for (std::size_t row = 0; row < A.rows(); ++row)
+    {
+        for (std::size_t col = 0; col < A.cols(); ++col)
+        {
+            assert(&A(row, col) == A.data() + (row * A.cols()) + col);
+        }
+    }
+}
+
+
+void test_data_const()
+{
+    Matrix<int> A(2, 2, 7);
+    const Matrix<int>& CA = A;
+
+    const int* p = CA.data();
+
+    assert(p[0] == 7);
+    assert(p[3] == 7);
+}
+
+
+void test_data_empty()
+{
+    Matrix<int> A;
+
+    int* p = A.data();
+
+    (void)p;
+}
+
+
+// Element Access: front() and back()
+
+
+void test_front()
+{
+    Matrix<int> A(2, 3, 0);
+    A(0, 0) = 10;
+
+    assert(A.front() == 10);
+
+    A.front() = 11;
+    assert(A(0, 0) == 11);
+}
+
+
+void test_back()
+{
+    Matrix<int> A(2, 3, 0);
+    A(1, 2) = 20;
+
+    assert(A.back() == 20);
+
+    A.back() = 21;
+    assert(A(1, 2) == 21);
+}
+
+
+void test_front_back_const()
+{
+    Matrix<int> A(2, 3, 0);
+    A(0, 0) = 10;
+    A(1, 2) = 20;
+
+    const Matrix<int>& CA = A;
+
+    assert(CA.front() == 10);
+    assert(CA.back() == 20);
+}
+
+
+void test_front_back_single_element()
+{
+    Matrix<int> A(1, 1, 42);
+
+    assert(A.front() == 42);
+    assert(A.back() == 42);
+
+    A.front() = 43;
+    assert(A.back() == 43);
+}
+
+
+void test_front_back_shared_storage()
+{
+    Matrix<int> A(2, 3, 0);
+    A(0, 0) = 5;
+    A(1, 2) = 9;
+
+    assert(A.front() == A(0, 0));
+    assert(A.back() == A(1, 2));
+
+    assert(&A.front() == &A(0, 0));
+    assert(&A.back() == &A(1, 2));
+}
+
+
+// Element Access: at()
+
+
+void test_at_valid()
+{
+    Matrix<int> A(2, 3, 0);
+
+    for (std::size_t row = 0; row < A.rows(); ++row)
+    {
+        for (std::size_t col = 0; col < A.cols(); ++col)
+        {
+            A.at(row, col) = static_cast<int>(row * A.cols() + col);
+        }
+    }
+
+    for (std::size_t row = 0; row < A.rows(); ++row)
+    {
+        for (std::size_t col = 0; col < A.cols(); ++col)
+        {
+            assert(A.at(row, col) == static_cast<int>(row * A.cols() + col));
+            assert(A.at(row, col) == A(row, col));
+        }
+    }
+
+    const Matrix<int>& CA = A;
+    assert(CA.at(1, 2) == 5);
+}
+
+
+void test_at_throws_out_of_range()
+{
+    Matrix<int> A(2, 3, 1);
+
+    bool threw = false;
+    try
+    {
+        A.at(2, 0);
+    }
+    catch (const std::out_of_range&)
+    {
+        threw = true;
+    }
+    assert(threw);
+
+    threw = false;
+    try
+    {
+        A.at(0, 3);
+    }
+    catch (const std::out_of_range&)
+    {
+        threw = true;
+    }
+    assert(threw);
+
+    threw = false;
+    try
+    {
+        A.at(2, 3);
+    }
+    catch (const std::out_of_range&)
+    {
+        threw = true;
+    }
+    assert(threw);
+}
+
+
+void test_at_empty_throws()
+{
+    Matrix<int> A;
+
+    bool threw = false;
+    try
+    {
+        A.at(0, 0);
+    }
+    catch (const std::out_of_range&)
+    {
+        threw = true;
+    }
+    assert(threw);
+}
+
+
+void test_at_throws_const()
+{
+    Matrix<int> A(1, 1, 1);
+    const Matrix<int>& CA = A;
+
+    bool threw = false;
+    try
+    {
+        CA.at(1, 0);
+    }
+    catch (const std::out_of_range&)
+    {
+        threw = true;
+    }
+    assert(threw);
+}
+
+
+// Modifiers: fill()
+
+
+void test_fill_basic()
+{
+    Matrix<int> A(2, 3, 0);
+    A.fill(7);
+    assert(A(0, 0) == 7);
+    assert(A(0, 1) == 7);
+    assert(A(0, 2) == 7);
+    assert(A(1, 0) == 7);
+    assert(A(1, 1) == 7);
+    assert(A(1, 2) == 7);
+}
+
+
+void test_fill_overwrites_existing()
+{
+    Matrix<int> A(2, 2, 1);
+    A.fill(9);
+    assert(A(0, 0) == 9);
+    assert(A(0, 1) == 9);
+    assert(A(1, 0) == 9);
+    assert(A(1, 1) == 9);
+}
+
+
+void test_fill_empty()
+{
+    Matrix<int> A;
+    A.fill(1);
+    assert(A.empty());
+}
+
+
+void test_fill_nontrivial_type()
+{
+    Matrix<std::string> A(2, 2, "hello");
+    A.fill("world");
+    assert(A(0, 0) == "world");
+    assert(A(1, 1) == "world");
+}
+
+
+// Modifiers: clear()
+
+
+void test_clear_populated()
+{
+    Matrix<int> A(2, 3, 5);
+    A.clear();
+    assert(A.rows() == 0);
+    assert(A.cols() == 0);
+    assert(A.size() == 0);
+    assert(A.empty());
+}
+
+
+void test_clear_empty()
+{
+    Matrix<int> A;
+    A.clear();
+    assert(A.empty());
+}
+
+
+void test_clear_then_reuse()
+{
+    Matrix<int> A(2, 3, 1);
+    A.clear();
+    Matrix<int> B(3, 2, 2);
+    A = B;
+    assert(A.rows() == 3);
+    assert(A.cols() == 2);
+    assert(A(0, 0) == 2);
+    assert(A(2, 1) == 2);
+}
+
+
+// Modifiers: swap()
+
+
+void test_swap_exchange_contents()
+{
+    Matrix<int> A(2, 3, 1);
+    Matrix<int> B(2, 3, 2);
+    A.swap(B);
+    assert(A(0, 0) == 2);
+    assert(A(1, 2) == 2);
+    assert(B(0, 0) == 1);
+    assert(B(1, 2) == 1);
+}
+
+
+void test_swap_unequal_dimensions()
+{
+    Matrix<int> A(2, 3, 1);
+    Matrix<int> B(3, 2, 2);
+    A.swap(B);
+    assert(A.rows() == 3);
+    assert(A.cols() == 2);
+    assert(A(0, 0) == 2);
+    assert(B.rows() == 2);
+    assert(B.cols() == 3);
+    assert(B(0, 0) == 1);
+}
+
+
+void test_swap_empty_with_populated()
+{
+    Matrix<int> A;
+    Matrix<int> B(2, 2, 7);
+    A.swap(B);
+    assert(A.rows() == 2);
+    assert(A.cols() == 2);
+    assert(A(0, 0) == 7);
+    assert(B.empty());
+}
+
+
+void test_swap_self()
+{
+    Matrix<int> A(2, 2, 3);
+    A.swap(A);
+    assert(A(0, 0) == 3);
+    assert(A(1, 1) == 3);
+}
+
+
+// Comparison: operator== and operator!=()
+
+
+void test_equality_identical_matrices()
+{
+    Matrix<int> A(2, 3, 5);
+    Matrix<int> B(2, 3, 5);
+    assert(A == B);
+}
+
+
+void test_inequality_different_values()
+{
+    Matrix<int> A(2, 3, 5);
+    Matrix<int> B(2, 3, 6);
+    assert(!(A == B));
+    assert(A != B);
+}
+
+
+void test_inequality_different_dimensions()
+{
+    Matrix<int> A(2, 3, 5);
+    Matrix<int> B(3, 2, 5);
+    assert(!(A == B));
+    assert(A != B);
+}
+
+
+void test_equality_empty_matrices()
+{
+    Matrix<int> A;
+    Matrix<int> B;
+    assert(A == B);
+}
+
+
+void test_inequality_empty_vs_populated()
+{
+    Matrix<int> A;
+    Matrix<int> B(1, 1, 1);
+    assert(!(A == B));
+    assert(A != B);
+}
+
+
+void test_equality_same_total_size_different_layout()
+{
+    Matrix<int> A(1, 6, 3);
+    Matrix<int> B(2, 3, 3);
+    assert(!(A == B));
+    assert(A != B);
+}
+
+
+void test_inequality_is_negation()
+{
+    Matrix<int> A(2, 2, 1);
+    Matrix<int> B(2, 2, 2);
+    assert((A != B) == !(A == B));
+    assert((A != A) == !(A == A));
+}
+
+
 int main()
 {
     test_default_constructor();
@@ -275,7 +697,38 @@ int main()
     test_moved_from_reuse();
     test_move_assignment();
     test_move_assignment_resizes();
+    test_data_contiguous_row_major();
+    test_data_matches_operator_paren();
+    test_data_const();
+    test_data_empty();
+    test_front();
+    test_back();
+    test_front_back_const();
+    test_front_back_single_element();
+    test_front_back_shared_storage();
+    test_at_valid();
+    test_at_throws_out_of_range();
+    test_at_empty_throws();
+    test_at_throws_const();
+    test_fill_basic();
+    test_fill_overwrites_existing();
+    test_fill_empty();
+    test_fill_nontrivial_type();
+    test_clear_populated();
+    test_clear_empty();
+    test_clear_then_reuse();
+    test_swap_exchange_contents();
+    test_swap_unequal_dimensions();
+    test_swap_empty_with_populated();
+    test_swap_self();
+    test_equality_identical_matrices();
+    test_inequality_different_values();
+    test_inequality_different_dimensions();
+    test_equality_empty_matrices();
+    test_inequality_empty_vs_populated();
+    test_equality_same_total_size_different_layout();
+    test_inequality_is_negation();
 
-    std::cout << "All Matrix Rule of Five tests passed!\n";
+    std::cout << "All Matrix tests passed!\n";
     return 0;
 }

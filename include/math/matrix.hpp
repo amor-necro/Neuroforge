@@ -1,7 +1,10 @@
 #pragma once
 
+#include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <stdexcept>
+#include <utility>
 #include <vector>
 
 namespace neuroforge::math
@@ -49,6 +52,40 @@ public:
 
     const T& operator()(std::size_t row,
                         std::size_t col) const;
+
+    T& at(std::size_t row,
+          std::size_t col);
+
+    const T& at(std::size_t row,
+                std::size_t col) const;
+
+    T& front();
+
+    const T& front() const;
+
+    T& back();
+
+    const T& back() const;
+
+    T* data() noexcept;
+
+    const T* data() const noexcept;
+
+
+    // Modifiers
+
+    void fill(const T& value);
+
+    void clear() noexcept;
+
+    void swap(Matrix& other) noexcept;
+
+
+    // Comparison
+
+    bool operator==(const Matrix& other) const;
+
+    bool operator!=(const Matrix& other) const;
 
 
     // Observers
