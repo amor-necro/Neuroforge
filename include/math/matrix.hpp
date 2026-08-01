@@ -105,6 +105,25 @@ public:
     bool operator!=(const Matrix& other) const;
 
 
+    // Arithmetic
+
+    Matrix operator+(const Matrix& other) const;
+
+    Matrix operator-(const Matrix& other) const;
+
+    Matrix& operator+=(const Matrix& other);
+
+    Matrix& operator-=(const Matrix& other);
+
+    Matrix operator*(const T& scalar) const;
+
+    Matrix operator/(const T& scalar) const;
+
+    Matrix& operator*=(const T& scalar);
+
+    Matrix& operator/=(const T& scalar);
+
+
     // Iterators
 
     using iterator = typename std::vector<T>::iterator;

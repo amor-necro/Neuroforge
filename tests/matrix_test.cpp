@@ -1083,6 +1083,215 @@ void test_max_size_is_positive()
 }
 
 
+// Arithmetic: binary operators
+
+
+void test_addition_basic()
+{
+    Matrix<int> A(2, 2, 1);
+    Matrix<int> B(2, 2, 2);
+    Matrix<int> C = A + B;
+    assert(C == Matrix<int>(2, 2, 3));
+}
+
+
+void test_subtraction_basic()
+{
+    Matrix<int> A(2, 2, 5);
+    Matrix<int> B(2, 2, 2);
+    Matrix<int> C = A - B;
+    assert(C == Matrix<int>(2, 2, 3));
+}
+
+
+void test_addition_identity()
+{
+    Matrix<int> A(2, 3, 7);
+    Matrix<int> zero(2, 3, 0);
+    assert(A + zero == A);
+}
+
+
+void test_subtraction_self()
+{
+    Matrix<int> A(2, 2, 4);
+    Matrix<int> zero = A - A;
+    assert(zero == Matrix<int>(2, 2, 0));
+}
+
+
+void test_addition_mismatch_dimensions()
+{
+    Matrix<int> A(2, 3, 1);
+    Matrix<int> B(3, 2, 1);
+    bool threw = false;
+    try
+    {
+        A + B;
+    }
+    catch (const std::invalid_argument&)
+    {
+        threw = true;
+    }
+    assert(threw);
+}
+
+
+void test_subtraction_mismatch_dimensions()
+{
+    Matrix<int> A(2, 3, 1);
+    Matrix<int> B(3, 2, 1);
+    bool threw = false;
+    try
+    {
+        A - B;
+    }
+    catch (const std::invalid_argument&)
+    {
+        threw = true;
+    }
+    assert(threw);
+}
+
+
+void test_compound_add_basic()
+{
+    Matrix<int> A(2, 2, 1);
+    Matrix<int> B(2, 2, 2);
+    A += B;
+    assert(A == Matrix<int>(2, 2, 3));
+}
+
+
+void test_compound_subtract_basic()
+{
+    Matrix<int> A(2, 2, 5);
+    Matrix<int> B(2, 2, 2);
+    A -= B;
+    assert(A == Matrix<int>(2, 2, 3));
+}
+
+
+void test_compound_add_mismatch_dimensions()
+{
+    Matrix<int> A(2, 3, 1);
+    Matrix<int> B(3, 2, 1);
+    bool threw = false;
+    try
+    {
+        A += B;
+    }
+    catch (const std::invalid_argument&)
+    {
+        threw = true;
+    }
+    assert(threw);
+}
+
+
+void test_compound_subtract_mismatch_dimensions()
+{
+    Matrix<int> A(2, 3, 1);
+    Matrix<int> B(3, 2, 1);
+    bool threw = false;
+    try
+    {
+        A -= B;
+    }
+    catch (const std::invalid_argument&)
+    {
+        threw = true;
+    }
+    assert(threw);
+}
+
+
+void test_addition_empty_matrices()
+{
+    Matrix<int> A;
+    Matrix<int> B;
+    assert(A + B == Matrix<int>());
+}
+
+
+void test_subtraction_empty_matrices()
+{
+    Matrix<int> A;
+    Matrix<int> B;
+    assert(A - B == Matrix<int>());
+}
+
+
+void test_scalar_multiply_basic()
+{
+    Matrix<int> A(2, 2, 3);
+    Matrix<int> B = A * 2;
+    assert(B == Matrix<int>(2, 2, 6));
+}
+
+
+void test_scalar_divide_basic()
+{
+    Matrix<int> A(2, 2, 6);
+    Matrix<int> B = A / 2;
+    assert(B == Matrix<int>(2, 2, 3));
+}
+
+
+void test_scalar_multiply_zero()
+{
+    Matrix<int> A(2, 2, 5);
+    Matrix<int> B = A * 0;
+    assert(B == Matrix<int>(2, 2, 0));
+}
+
+
+void test_scalar_multiply_one()
+{
+    Matrix<int> A(2, 2, 5);
+    assert(A * 1 == A);
+}
+
+
+void test_scalar_divide_one()
+{
+    Matrix<int> A(2, 2, 5);
+    assert(A / 1 == A);
+}
+
+
+void test_compound_scalar_multiply()
+{
+    Matrix<int> A(2, 2, 3);
+    A *= 2;
+    assert(A == Matrix<int>(2, 2, 6));
+}
+
+
+void test_compound_scalar_divide()
+{
+    Matrix<int> A(2, 2, 6);
+    A /= 2;
+    assert(A == Matrix<int>(2, 2, 3));
+}
+
+
+void test_scalar_operators_empty_matrix()
+{
+    Matrix<int> A;
+    assert((A * 3).empty());
+    assert((A / 2).empty());
+}
+
+
+void test_scalar_operators_const_matrix()
+{
+    const Matrix<int> A(2, 2, 4);
+    assert((A * 2) == Matrix<int>(2, 2, 8));
+    assert((A / 2) == Matrix<int>(2, 2, 2));
+}
+
+
 int main()
 {
     test_default_constructor();
@@ -1154,6 +1363,27 @@ int main()
     test_capacity_after_reserve();
     test_shrink_to_fit_preserves_elements();
     test_max_size_is_positive();
+    test_addition_basic();
+    test_subtraction_basic();
+    test_addition_identity();
+    test_subtraction_self();
+    test_addition_mismatch_dimensions();
+    test_subtraction_mismatch_dimensions();
+    test_compound_add_basic();
+    test_compound_subtract_basic();
+    test_compound_add_mismatch_dimensions();
+    test_compound_subtract_mismatch_dimensions();
+    test_addition_empty_matrices();
+    test_subtraction_empty_matrices();
+    test_scalar_multiply_basic();
+    test_scalar_divide_basic();
+    test_scalar_multiply_zero();
+    test_scalar_multiply_one();
+    test_scalar_divide_one();
+    test_compound_scalar_multiply();
+    test_compound_scalar_divide();
+    test_scalar_operators_empty_matrix();
+    test_scalar_operators_const_matrix();
 
     std::cout << "All Matrix tests passed!\n";
     return 0;

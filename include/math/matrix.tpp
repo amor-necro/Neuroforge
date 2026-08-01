@@ -139,6 +139,135 @@ void Matrix<T>::swap(Matrix& other) noexcept
 }
 
 //==================================================
+// Comparison Implementations
+//==================================================
+
+template<typename T>
+bool Matrix<T>::operator==(const Matrix& other) const
+{
+    if (rows_ != other.rows_ || cols_ != other.cols_)
+    {
+        return false;
+    }
+
+    return std::equal(data_.begin(), data_.end(), other.data_.begin());
+}
+
+template<typename T>
+bool Matrix<T>::operator!=(const Matrix& other) const
+{
+    return !(*this == other);
+}
+
+//==================================================
+// Arithmetic Implementations
+//==================================================
+
+template<typename T>
+Matrix<T> Matrix<T>::operator+(const Matrix& other) const
+{
+    if (rows_ != other.rows_ || cols_ != other.cols_)
+    {
+        throw std::invalid_argument("Matrix<T>::operator+: dimension mismatch");
+    }
+
+    Matrix result(rows_, cols_);
+    for (std::size_t i = 0; i < data_.size(); ++i)
+    {
+        result.data_[i] = data_[i] + other.data_[i];
+    }
+    return result;
+}
+
+template<typename T>
+Matrix<T> Matrix<T>::operator-(const Matrix& other) const
+{
+    if (rows_ != other.rows_ || cols_ != other.cols_)
+    {
+        throw std::invalid_argument("Matrix<T>::operator-: dimension mismatch");
+    }
+
+    Matrix result(rows_, cols_);
+    for (std::size_t i = 0; i < data_.size(); ++i)
+    {
+        result.data_[i] = data_[i] - other.data_[i];
+    }
+    return result;
+}
+
+template<typename T>
+Matrix<T>& Matrix<T>::operator+=(const Matrix& other)
+{
+    if (rows_ != other.rows_ || cols_ != other.cols_)
+    {
+        throw std::invalid_argument("Matrix<T>::operator+=: dimension mismatch");
+    }
+
+    for (std::size_t i = 0; i < data_.size(); ++i)
+    {
+        data_[i] += other.data_[i];
+    }
+    return *this;
+}
+
+template<typename T>
+Matrix<T>& Matrix<T>::operator-=(const Matrix& other)
+{
+    if (rows_ != other.rows_ || cols_ != other.cols_)
+    {
+        throw std::invalid_argument("Matrix<T>::operator-=: dimension mismatch");
+    }
+
+    for (std::size_t i = 0; i < data_.size(); ++i)
+    {
+        data_[i] -= other.data_[i];
+    }
+    return *this;
+}
+
+template<typename T>
+Matrix<T> Matrix<T>::operator*(const T& scalar) const
+{
+    Matrix result(rows_, cols_);
+    for (std::size_t i = 0; i < data_.size(); ++i)
+    {
+        result.data_[i] = data_[i] * scalar;
+    }
+    return result;
+}
+
+template<typename T>
+Matrix<T> Matrix<T>::operator/(const T& scalar) const
+{
+    Matrix result(rows_, cols_);
+    for (std::size_t i = 0; i < data_.size(); ++i)
+    {
+        result.data_[i] = data_[i] / scalar;
+    }
+    return result;
+}
+
+template<typename T>
+Matrix<T>& Matrix<T>::operator*=(const T& scalar)
+{
+    for (std::size_t i = 0; i < data_.size(); ++i)
+    {
+        data_[i] *= scalar;
+    }
+    return *this;
+}
+
+template<typename T>
+Matrix<T>& Matrix<T>::operator/=(const T& scalar)
+{
+    for (std::size_t i = 0; i < data_.size(); ++i)
+    {
+        data_[i] /= scalar;
+    }
+    return *this;
+}
+
+//==================================================
 // Capacity Implementations
 //==================================================
 
@@ -180,27 +309,6 @@ template<typename T>
 std::size_t Matrix<T>::max_size() const noexcept
 {
     return data_.max_size();
-}
-
-//==================================================
-// Comparison Implementations
-//==================================================
-
-template<typename T>
-bool Matrix<T>::operator==(const Matrix& other) const
-{
-    if (rows_ != other.rows_ || cols_ != other.cols_)
-    {
-        return false;
-    }
-
-    return std::equal(data_.begin(), data_.end(), other.data_.begin());
-}
-
-template<typename T>
-bool Matrix<T>::operator!=(const Matrix& other) const
-{
-    return !(*this == other);
 }
 
 //==================================================
