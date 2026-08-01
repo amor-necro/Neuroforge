@@ -1,5 +1,6 @@
 #include <cassert>
 #include <iostream>
+#include <numeric>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
@@ -21,6 +22,24 @@ static_assert(std::is_nothrow_move_assignable_v<Matrix<int>>);
 static_assert(std::is_destructible_v<Matrix<int>>);
 static_assert(noexcept(std::declval<Matrix<int>&>().clear()));
 static_assert(noexcept(std::declval<Matrix<int>&>().swap(std::declval<Matrix<int>&>())));
+static_assert(std::is_same_v<Matrix<int>::value_type, int>);
+static_assert(std::is_same_v<Matrix<int>::difference_type, std::ptrdiff_t>);
+static_assert(std::is_same_v<Matrix<int>::iterator, std::vector<int>::iterator>);
+static_assert(std::is_same_v<Matrix<int>::const_iterator, std::vector<int>::const_iterator>);
+static_assert(std::is_same_v<Matrix<int>::reverse_iterator, std::vector<int>::reverse_iterator>);
+static_assert(std::is_same_v<Matrix<int>::const_reverse_iterator, std::vector<int>::const_reverse_iterator>);
+static_assert(noexcept(std::declval<Matrix<int>&>().begin()));
+static_assert(noexcept(std::declval<const Matrix<int>&>().begin()));
+static_assert(noexcept(std::declval<Matrix<int>&>().end()));
+static_assert(noexcept(std::declval<const Matrix<int>&>().end()));
+static_assert(noexcept(std::declval<Matrix<int>&>().rbegin()));
+static_assert(noexcept(std::declval<const Matrix<int>&>().rbegin()));
+static_assert(noexcept(std::declval<Matrix<int>&>().rend()));
+static_assert(noexcept(std::declval<const Matrix<int>&>().rend()));
+static_assert(noexcept(std::declval<Matrix<int>&>().cbegin()));
+static_assert(noexcept(std::declval<Matrix<int>&>().cend()));
+static_assert(noexcept(std::declval<Matrix<int>&>().crbegin()));
+static_assert(noexcept(std::declval<Matrix<int>&>().crend()));
 
 
 // Default Constructor
@@ -683,6 +702,190 @@ void test_inequality_is_negation()
 }
 
 
+// Iterators: type aliases
+
+
+void test_iterator_type_aliases()
+{
+    static_assert(std::is_same_v<Matrix<int>::value_type, int>);
+    static_assert(std::is_same_v<Matrix<int>::difference_type, std::ptrdiff_t>);
+    static_assert(std::is_same_v<Matrix<int>::iterator, std::vector<int>::iterator>);
+    static_assert(std::is_same_v<Matrix<int>::const_iterator, std::vector<int>::const_iterator>);
+    static_assert(std::is_same_v<Matrix<int>::reverse_iterator, std::vector<int>::reverse_iterator>);
+    static_assert(std::is_same_v<Matrix<int>::const_reverse_iterator, std::vector<int>::const_reverse_iterator>);
+}
+
+
+// Iterators: noexcept
+
+
+void test_iterator_noexcept()
+{
+    Matrix<int> A(2, 2, 0);
+    const Matrix<int>& CA = A;
+
+    (void)A.begin();
+    (void)A.end();
+    (void)A.rbegin();
+    (void)A.rend();
+    (void)CA.begin();
+    (void)CA.end();
+    (void)CA.rbegin();
+    (void)CA.rend();
+    (void)CA.cbegin();
+    (void)CA.cend();
+    (void)CA.crbegin();
+    (void)CA.crend();
+}
+
+
+// Iterators: range-based for
+
+
+void test_range_based_for()
+{
+    Matrix<int> A(2, 3, 1);
+    int sum = 0;
+    for (int& x : A)
+    {
+        sum += x;
+    }
+    assert(sum == 6);
+}
+
+
+// Iterators: std::fill
+
+
+void test_std_fill()
+{
+    Matrix<int> A(2, 3, 0);
+    std::fill(A.begin(), A.end(), 7);
+
+    for (std::size_t i = 0; i < A.size(); ++i)
+    {
+        assert(A.data()[i] == 7);
+    }
+}
+
+
+// Iterators: std::accumulate
+
+
+void test_std_accumulate()
+{
+    Matrix<int> A(2, 3, 3);
+    int sum = std::accumulate(A.cbegin(), A.cend(), 0);
+    assert(sum == 18);
+}
+
+
+// Iterators: std::copy
+
+
+void test_std_copy()
+{
+    Matrix<int> A(2, 3, 0);
+    int k = 1;
+    for (auto& x : A)
+    {
+        x = k++;
+    }
+
+    std::vector<int> dest(A.size());
+    std::copy(A.begin(), A.end(), dest.begin());
+
+    for (std::size_t i = 0; i < A.size(); ++i)
+    {
+        assert(dest[i] == A.data()[i]);
+    }
+}
+
+
+// Iterators: const iteration
+
+
+void test_const_iteration()
+{
+    Matrix<int> A(2, 2, 4);
+    const Matrix<int>& CA = A;
+
+    int sum = 0;
+    for (auto it = CA.cbegin(); it != CA.cend(); ++it)
+    {
+        sum += *it;
+    }
+    assert(sum == 16);
+}
+
+
+// Iterators: reverse iteration
+
+
+void test_reverse_iteration()
+{
+    Matrix<int> A(1, 5, 0);
+    for (std::size_t i = 0; i < A.size(); ++i)
+    {
+        A.data()[i] = static_cast<int>(i + 1);
+    }
+
+    int sum = 0;
+    for (auto it = A.rbegin(); it != A.rend(); ++it)
+    {
+        sum += *it;
+    }
+    assert(sum == 15);
+}
+
+
+// Iterators: const reverse iteration
+
+
+void test_const_reverse_iteration()
+{
+    Matrix<int> A(2, 3, 2);
+    const Matrix<int>& CA = A;
+
+    int sum = 0;
+    for (auto it = CA.crbegin(); it != CA.crend(); ++it)
+    {
+        sum += *it;
+    }
+    assert(sum == 12);
+}
+
+
+// Iterators: empty matrix
+
+
+void test_empty_matrix_iterators()
+{
+    Matrix<int> A;
+    assert(A.begin() == A.end());
+    assert(A.rbegin() == A.rend());
+    assert(A.cbegin() == A.cend());
+    assert(A.crbegin() == A.crend());
+}
+
+
+// Iterators: single element
+
+
+void test_single_element_iterators()
+{
+    Matrix<int> A(1, 1, 42);
+
+    assert(*A.begin() == 42);
+    assert(*A.cbegin() == 42);
+    assert(*A.rbegin() == 42);
+    assert(*A.crbegin() == 42);
+
+    assert(A.begin() + 1 == A.end());
+    assert(A.rbegin() + 1 == A.rend());
+}
+
+
 int main()
 {
     test_default_constructor();
@@ -728,6 +931,17 @@ int main()
     test_inequality_empty_vs_populated();
     test_equality_same_total_size_different_layout();
     test_inequality_is_negation();
+    test_iterator_type_aliases();
+    test_iterator_noexcept();
+    test_range_based_for();
+    test_std_fill();
+    test_std_accumulate();
+    test_std_copy();
+    test_const_iteration();
+    test_reverse_iteration();
+    test_const_reverse_iteration();
+    test_empty_matrix_iterators();
+    test_single_element_iterators();
 
     std::cout << "All Matrix tests passed!\n";
     return 0;

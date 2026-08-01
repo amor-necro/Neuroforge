@@ -160,6 +160,82 @@ bool Matrix<T>::operator!=(const Matrix& other) const
 }
 
 //==================================================
+// Iterator Implementations
+//==================================================
+
+template<typename T>
+typename Matrix<T>::iterator Matrix<T>::begin() noexcept
+{
+    return data_.begin();
+}
+
+template<typename T>
+typename Matrix<T>::const_iterator Matrix<T>::begin() const noexcept
+{
+    return data_.begin();
+}
+
+template<typename T>
+typename Matrix<T>::iterator Matrix<T>::end() noexcept
+{
+    return data_.end();
+}
+
+template<typename T>
+typename Matrix<T>::const_iterator Matrix<T>::end() const noexcept
+{
+    return data_.end();
+}
+
+template<typename T>
+typename Matrix<T>::reverse_iterator Matrix<T>::rbegin() noexcept
+{
+    return data_.rbegin();
+}
+
+template<typename T>
+typename Matrix<T>::const_reverse_iterator Matrix<T>::rbegin() const noexcept
+{
+    return data_.rbegin();
+}
+
+template<typename T>
+typename Matrix<T>::reverse_iterator Matrix<T>::rend() noexcept
+{
+    return data_.rend();
+}
+
+template<typename T>
+typename Matrix<T>::const_reverse_iterator Matrix<T>::rend() const noexcept
+{
+    return data_.rend();
+}
+
+template<typename T>
+typename Matrix<T>::const_iterator Matrix<T>::cbegin() const noexcept
+{
+    return data_.cbegin();
+}
+
+template<typename T>
+typename Matrix<T>::const_iterator Matrix<T>::cend() const noexcept
+{
+    return data_.cend();
+}
+
+template<typename T>
+typename Matrix<T>::const_reverse_iterator Matrix<T>::crbegin() const noexcept
+{
+    return data_.crbegin();
+}
+
+template<typename T>
+typename Matrix<T>::const_reverse_iterator Matrix<T>::crend() const noexcept
+{
+    return data_.crend();
+}
+
+//==================================================
 // Observer Implementations
 //==================================================
 

@@ -88,6 +88,29 @@ public:
     bool operator!=(const Matrix& other) const;
 
 
+    // Iterators
+
+    using iterator = typename std::vector<T>::iterator;
+    using const_iterator = typename std::vector<T>::const_iterator;
+    using reverse_iterator = typename std::vector<T>::reverse_iterator;
+    using const_reverse_iterator = typename std::vector<T>::const_reverse_iterator;
+    using difference_type = typename std::vector<T>::difference_type;
+    using value_type = typename std::vector<T>::value_type;
+
+    iterator begin() noexcept;
+    iterator end() noexcept;
+    const_iterator begin() const noexcept;
+    const_iterator end() const noexcept;
+    reverse_iterator rbegin() noexcept;
+    reverse_iterator rend() noexcept;
+    const_reverse_iterator rbegin() const noexcept;
+    const_reverse_iterator rend() const noexcept;
+    const_iterator cbegin() const noexcept;
+    const_iterator cend() const noexcept;
+    const_reverse_iterator crbegin() const noexcept;
+    const_reverse_iterator crend() const noexcept;
+
+
     // Observers
 
     [[nodiscard]]
