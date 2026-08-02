@@ -1,182 +1,287 @@
+<div align="center">
+
 # Neuroforge
 
-> A high-performance numerical computing engine built from first principles in Modern C++23.
+**A modern C++23 numerical computing framework, engineered from first principles.**
 
-[![Build Status](https://img.shields.io/badge/build-pending-lightgrey)](#build-status)
-[![License](https://img.shields.io/badge/license-pending-lightgrey)](#license)
-[![C++](https://img.shields.io/badge/C%2B%2B-23-blue)](https://isocpp.org/)
+[![C++23](https://img.shields.io/badge/C%2B%2B-23-00599C?logo=cplusplus&logoColor=white)](https://en.cppreference.com/w/cpp/23)
+[![Header-Only](https://img.shields.io/badge/library-header--only-informational)](#folder-structure)
+[![Build System](https://img.shields.io/badge/build-CMake-064F8C?logo=cmake&logoColor=white)](https://cmake.org/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/version-v0.x-orange.svg)](#current-status)
 
-Neuroforge is a long-term open-source systems project for building numerical computing infrastructure from scratch in modern C++23. It is a place to learn systems programming and performance engineering while developing reusable engineering components: memory-aware data structures, mathematical primitives, numerical algorithms, runtime facilities, and measurement tools. Machine learning is an important application of this foundation, not the definition of the project. The work emphasizes understanding how low-latency C++ techniques, clean interfaces, and empirical performance work together.
+</div>
+
+---
+
+## Table of Contents
+
+1. [Overview](#overview)
+2. [Features](#features)
+3. [Architecture](#architecture)
+4. [Folder Structure](#folder-structure)
+5. [Current Status](#current-status)
+6. [Installation](#installation)
+7. [Quick Example](#quick-example)
+8. [Philosophy](#philosophy)
+9. [Engineering Principles](#engineering-principles)
+10. [Roadmap](#roadmap)
+11. [Project Goals](#project-goals)
+12. [Future Ecosystem](#future-ecosystem)
+13. [Contributing](#contributing)
+14. [License](#license)
+
+---
+
+## Overview
+
+Neuroforge is a modern C++23 numerical computing framework built completely from first principles. The objective is not simply to implement a set of mathematical algorithms, but to engineer an extensible numerical computing ecosystem — one where architecture, performance, correctness, and maintainability are treated as equally important design constraints from the outset.
+
+Every component in Neuroforge is designed as part of a layered system: a `Matrix` container that owns no more responsibility than a container should, algorithms that operate on containers without owning memory, and memory and runtime systems that remain entirely ignorant of the mathematics running on top of them. The result is a codebase where each layer can be understood, tested, and reasoned about independently.
+
+## Features
+
+Neuroforge currently provides:
+
+- A general-purpose `Matrix` container with value semantics and STL-consistent iteration
+- Full Rule of Five compliance, with move semantics as the default path
+- Element access via both linear and multi-dimensional indexing
+- STL-style iterators supporting range-based iteration and standard algorithm interop
+- Arithmetic operators (`+`, `-`, `*`, scalar operations) with well-defined, tested semantics
+- Matrix multiplication with a straightforward, correctness-first implementation
+- A unit test suite covering constructors, element access, iterators, and arithmetic
+- Reference documentation for all public APIs
+- A modern CMake build system with clean target-based configuration
+
+Planned features are tracked in the [Roadmap](#roadmap) below and are not represented as complete.
 
 ## Architecture
 
-```text
+Neuroforge is built in independent layers, with a small number of architectural rules enforced across the codebase:
+
+- **Mathematical algorithms never own memory.** Algorithms operate on containers passed to them; they do not allocate, own, or manage storage themselves.
+- **Memory systems never implement mathematics.** Allocators and memory utilities are generic and have no awareness of the mathematical types built on top of them.
+- **Runtime systems never modify mathematical APIs.** Parallelism and scheduling are applied *around* mathematical code, never baked into its interface.
+- **Every higher layer depends only on lower layers.** There are no upward or circular dependencies between layers.
+
+```
 Neuroforge
-|
-|-- Core
-|   `-- Fundamental types, utilities, and project-wide facilities
-|-- Memory Engine
-|   `-- Allocation strategies and memory-management infrastructure
-|-- Math Engine
-|   `-- Matrices, tensors, and foundational mathematical operations
-|-- Numerical Algorithms
-|   `-- Linear algebra, reductions, and optimization-oriented algorithms
-|-- Runtime
-|   `-- Execution, scheduling, and concurrency facilities
-|-- Benchmark Suite
-|   `-- Repeatable performance measurement and regression tracking
-|-- Machine Learning
-|   `-- Models and training primitives built on the numerical engine
-`-- Future Quant Extensions
-    `-- Quantitative-computing components built on the shared foundation
+├── Core
+├── Math
+│      ├── Matrix
+│      └── StaticMatrix          (future)
+├── Linear Algebra
+├── Numerical Computing
+├── Statistics
+├── Optimization
+├── Random
+├── Memory
+│      ├── Alignment
+│      ├── Arena Allocator
+│      ├── Pool Allocator
+│      └── Custom Allocators
+├── Runtime
+│      ├── Thread Pool
+│      ├── Parallel Algorithms
+│      └── Task Scheduler
+├── SIMD Backend
+└── Machine Learning Foundation
 ```
 
-The architecture above is the intended direction, not a claim that every subsystem exists today. The current work is focused on the core infrastructure, build, documentation, and engineering foundations required before numerical-engine implementation begins.
+This layering is a design constraint, not a suggestion: pull requests that introduce a dependency from a lower layer to a higher one are considered architectural violations regardless of how small the change is.
+
+## Folder Structure
+
+```
+neuroforge/
+├── include/neuroforge/      # Public, header-only library headers
+│   ├── core/                  # Core abstractions shared across the library
+│   ├── math/                  # Matrix, StaticMatrix (future)
+│   ├── linalg/                 # Linear algebra
+│   ├── numeric/                 # Numerical computing
+│   ├── stats/                   # Statistics
+│   ├── optim/                    # Optimization
+│   ├── random/                    # Random number generation
+│   ├── memory/                     # Allocators, alignment utilities
+│   ├── runtime/                     # Thread pool, parallel algorithms, scheduler
+│   ├── simd/                         # SIMD backend
+│   └── ml/                            # Machine learning foundation
+├── src/                      # Implementation for any non-header-only components
+├── tests/                    # Unit tests, mirroring include/ structure
+├── benchmarks/               # Google Benchmark suites
+├── examples/                 # Standalone usage examples
+├── docs/                     # Design notes and API documentation
+├── cmake/                    # CMake modules and helper scripts
+├── scripts/                  # Developer and CI utility scripts
+├── third_party/              # Vendored or fetched dependencies (kept minimal)
+├── CMakeLists.txt
+└── README.md
+```
 
 ## Current Status
 
-Neuroforge is in active early development. Module 1 establishes the project scaffold, build configuration, documentation, and public module boundaries. No numerical engine, matrix, tensor, runtime, or machine-learning implementation is currently provided. Broader subsystems are developed incrementally according to the roadmap.
+**Version:** v0.x — pre-release, active development.
 
-## Design Philosophy
+| Component | Status |
+|---|---|
+| Matrix container | Complete |
+| Constructors | Complete |
+| Rule of Five | Complete |
+| Element access | Complete |
+| Iterators | Complete |
+| Arithmetic operators | Complete |
+| Matrix multiplication | Complete |
+| Unit tests | Complete |
+| Documentation | Complete |
+| CMake build system | Complete |
 
-- **Performance first.** Design decisions should make data movement, allocation, and execution costs visible and measurable.
-- **Modern C++23.** Use the current standard library and language facilities where they improve clarity, safety, or efficiency.
-- **Zero-cost abstractions.** Prefer interfaces that express intent without imposing unnecessary runtime overhead.
-- **RAII and value semantics.** Make ownership and resource lifetime explicit, safe, and local.
-- **Benchmark-driven development.** Establish measurements before and after meaningful performance work.
-- **Test-driven development.** Build confidence through focused, repeatable tests alongside each primitive.
-- **Clean architecture.** Keep foundational layers independent, composable, and approachable to study.
-- **Learn by building from first principles.** Implement the core machinery directly to understand its mathematical and systems-level trade-offs.
+Everything below the Matrix container in the [architecture](#architecture) diagram — linear algebra, numerical computing, statistics, optimization, memory systems, runtime, SIMD, and machine learning — is planned and not yet implemented. See the [Roadmap](#roadmap).
 
-## Project Goals
+## Installation
 
-### Current Goals
+### Prerequisites
 
-- Establish core project infrastructure and clear subsystem boundaries.
-- Maintain a disciplined C++23 build, documentation, and test workflow.
-- Document API choices, invariants, and performance trade-offs before implementation begins.
-- Prepare the foundation for numerical primitives without external numerical or machine-learning libraries.
-
-### Mid-term Goals
-
-- Extend the math engine with linear algebra and practical numerical algorithms.
-- Introduce reproducible benchmarks and performance-regression tracking.
-- Build runtime facilities for structured concurrency and parallel execution.
-- Provide the numerical infrastructure on which machine-learning components can be implemented cleanly.
-
-### Long-term Vision
-
-- Develop a cohesive, high-performance numerical computing engine suitable for experimentation and study.
-- Demonstrate how modern C++ systems techniques apply to numerical software.
-- Support machine learning and quantitative-computing extensions as clients of the core engine.
-- Become a durable engineering record of decisions, measurements, and implementation trade-offs.
-
-## Roadmap
-
-The roadmap is directional. A version represents a bounded, tested capability rather than a release-date commitment.
-
-| Version | Focus | Status |
-| --- | --- | --- |
-| v0.1 | Core Infrastructure | In progress |
-| v0.2 | Memory Engine | Planned |
-| v0.3 | Math Engine | Planned |
-| v0.4 | Numerical Algorithms | Planned |
-| v0.5 | Benchmark Suite | Planned |
-| v0.6 | Runtime | Planned |
-| v0.7 | Machine Learning | Planned |
-| v0.8 | Performance Optimizations | Planned |
-| v0.9 | Quantitative Computing Extensions | Planned |
-| v1.0 | Stable Release | Planned |
-
-## Repository Layout
-
-```text
-Neuroforge/
-|-- cmake/                         Shared CMake modules
-|-- docs/                          Architecture, roadmap, benchmarks, and decisions
-|-- include/
-|   |-- core/                      Public foundational APIs
-|   |-- memory/                    Public memory-engine APIs
-|   |-- math/                      Public mathematical APIs
-|   |-- numerical/                 Public numerical-algorithm APIs
-|   |-- runtime/                   Public runtime APIs
-|   |-- ml/                        Public machine-learning APIs
-|   `-- utils/                     Public supporting utilities
-|-- src/
-|   |-- core/                      Foundational implementation units
-|   |-- memory/                    Memory-engine implementation units
-|   |-- math/                      Mathematical implementation units
-|   |-- numerical/                 Numerical-algorithm implementation units
-|   |-- runtime/                   Runtime implementation units
-|   |-- ml/                        Machine-learning implementation units
-|   `-- utils/                     Supporting implementation units
-|-- tests/                         Test sources
-|-- benchmarks/                    Benchmark sources and measurement support
-|-- examples/                      Small executable examples
-|-- third_party/                   Vendored dependencies, when explicitly approved
-|-- scripts/                       Development and automation scripts
-|-- AGENTS.md                      Development workflow and project conventions
-|-- CMakeLists.txt                 Top-level build configuration
-|-- LICENSE                        MIT License
-`-- README.md
-```
-
-## Build Status
-
-Continuous integration has not yet been configured. The build-status badge will
-be updated when a workflow is added.
-
-### Requirements
-
+- A C++23-capable compiler (recent GCC or Clang)
 - CMake 3.25 or newer
-- A C++23-capable compiler: MSVC 19.3+, GCC 13+, or Clang 16+
+- Ninja (recommended) or another CMake-supported generator
 
-### Build
+### Building from Source
 
-```powershell
-cmake -B build -DCMAKE_BUILD_TYPE=Debug
+```bash
+git clone https://github.com/amor-eng/neuroforge.git
+cd neuroforge
+
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ```
 
-### Run Tests
+### Running Tests
 
-```powershell
-ctest --test-dir build --output-on-failure
+```bash
+cd build
+ctest --output-on-failure
 ```
 
-## Why Neuroforge?
+### Using Neuroforge in Your Project
 
-Numerical software is where algorithms meet memory layout, compiler behavior, concurrency, and hardware constraints. Neuroforge treats those concerns as first-class engineering problems. Rather than hiding the foundation behind a large dependency stack, the project builds it deliberately and documents why each layer is shaped the way it is.
+As a header-only library, Neuroforge can be consumed by adding `include/` to your project's include path:
 
-The result is intended to be useful both as a growing numerical foundation and as a practical study of modern C++ systems design.
+```cmake
+add_subdirectory(third_party/neuroforge)
+target_link_libraries(your_target PRIVATE neuroforge::neuroforge)
+```
 
-## Future Directions
+An interface CMake target and install rules are provided so Neuroforge can be integrated via `add_subdirectory` or `find_package` once installed.
 
-The following areas are under consideration and are not implemented unless explicitly identified in the current-status section:
+## Quick Example
 
-- SIMD execution
-- Custom allocators
-- Thread pools
-- Lock-free data structures
-- Tensor engine
-- Optimization algorithms
-- Automatic differentiation
-- Quantitative computing
+```cpp
+#include <neuroforge/math/matrix.hpp>
+
+#include <iostream>
+
+int main() {
+    using neuroforge::Matrix;
+
+    Matrix<double> a{2, 2, {1.0, 2.0,
+                            3.0, 4.0}};
+
+    Matrix<double> b{2, 2, {5.0, 6.0,
+                            7.0, 8.0}};
+
+    Matrix<double> c = a * b;   // matrix multiplication
+
+    for (std::size_t row = 0; row < c.rows(); ++row) {
+        for (std::size_t col = 0; col < c.cols(); ++col) {
+            std::cout << c(row, col) << ' ';
+        }
+        std::cout << '\n';
+    }
+
+    return 0;
+}
+```
+
+Additional, buildable examples are maintained in `examples/` and kept in sync with the current public API.
+
+## Philosophy
+
+Neuroforge is not intended to replace Eigen, Blaze, Armadillo, or xtensor — that is not a realistic or useful goal for a project at this stage, and no claim to the contrary is made anywhere in this repository. Those libraries represent years of accumulated engineering and are the right choice for production numerical work today.
+
+Neuroforge is, instead, an educational and engineering journey toward building a production-quality numerical computing framework from first principles. Every abstraction — from the Matrix container's storage layout to the eventual SIMD backend — is implemented deliberately, so that the reasons behind each design decision are understood rather than inherited from an existing library's implementation.
+
+## Engineering Principles
+
+- **Modern C++23.** The codebase uses current language and standard library facilities as the default, not legacy idioms preserved for compatibility.
+- **STL-style APIs.** Container and algorithm interfaces follow STL naming, iterator, and concept conventions wherever they apply.
+- **RAII.** Resource lifetimes are always tied to object lifetimes; there are no manual acquire/release pairs in public APIs.
+- **Strong exception safety.** Operations either complete fully or leave affected objects in their original state.
+- **Header-only where appropriate.** Templates and performance-sensitive components remain header-only; this is relaxed only where compile-time cost or binary size genuinely requires it.
+- **Performance without sacrificing readability.** Optimization is applied deliberately and measured, not embedded reflexively at the cost of clarity.
+- **Extensive testing.** Every public component ships with a corresponding test suite before it is considered complete.
+- **Incremental engineering.** Features are developed and merged in small, reviewable units, not large speculative rewrites.
+- **First-principles implementation.** Algorithms are implemented and understood directly rather than wrapped around an existing library.
+
+## Roadmap
+
+| Phase | Focus | Status |
+|---|---|---|
+| 1 | Matrix Container | Complete |
+| 2 | Linear Algebra | Planned |
+| 3 | Numerical Computing | Planned |
+| 4 | Statistics | Planned |
+| 5 | Optimization | Planned |
+| 6 | Memory Systems | Planned |
+| 7 | Cache Optimization | Planned |
+| 8 | SIMD | Planned |
+| 9 | Parallel Runtime | Planned |
+| 10 | Machine Learning Foundation | Planned |
+
+Phases are developed sequentially where a genuine dependency exists (for example, Linear Algebra depends on the Matrix container), and are reordered only when a dependency analysis justifies it. Each phase is expected to ship with its own documentation, tests, and — once Phase 8 lands — benchmark coverage.
+
+## Project Goals
+
+Neuroforge's long-term goals include:
+
+- High-performance linear algebra (decompositions, eigenvalue problems, solvers)
+- A broader set of numerical algorithms (root finding, integration, interpolation)
+- Memory optimization through custom allocators and arena-based strategies
+- Cache-aware algorithm and data-layout design
+- SIMD-accelerated numerical kernels
+- Parallel execution via a first-party thread pool and task scheduler
+- Support for quantitative finance workloads
+- Machine learning primitives (tensors, automatic differentiation, layers, optimizers)
+
+These are stated as directions, not commitments with fixed timelines. Each is only claimed as delivered once it appears as "Complete" in the [Roadmap](#roadmap).
+
+## Future Ecosystem
+
+Neuroforge is designed to serve as the mathematical backend for [Blazebook](https://github.com/amor-eng/blazebook), a separate project building low-latency trading infrastructure. In that role, Neuroforge is responsible for the numerical computing layer — matrix operations, linear algebra, and eventually statistics and optimization — while Blazebook builds the trading-specific systems (order book, matching engine, execution, risk) on top of it.
+
+This separation is deliberate: Neuroforge remains a general-purpose numerical library with no trading-specific assumptions, and Blazebook remains free to evolve its domain logic independently of Neuroforge's internals.
 
 ## Contributing
 
-Contributions are welcome as the project matures. Start by reading [AGENTS.md](AGENTS.md) for the development workflow, code conventions, and the feature-by-feature process used in this repository.
+Contributions are welcome, with the expectation that they respect the architectural rules described above.
 
-Good contributions are small, scoped, tested, and accompanied by a clear explanation of correctness and, where relevant, performance impact. Please avoid introducing external numerical or machine-learning libraries: the purpose of Neuroforge is to develop and understand the underlying infrastructure directly.
+To contribute:
 
-## Learning Journey
+1. Open an issue describing the proposed change before submitting a substantial pull request.
+2. Respect the layering rules in [Architecture](#architecture) — no upward or circular dependencies between layers.
+3. Include unit tests for any new or modified behavior.
+4. Keep pull requests scoped to a single logical change.
+5. Update relevant documentation in the same pull request as the code change.
 
-Neuroforge is not a collection of algorithm implementations in isolation. It is an engineering journal expressed in code: design choices, API boundaries, test cases, benchmarks, and the trade-offs that motivated them are part of the project.
-
-Each component is an opportunity to examine how a mathematical idea becomes reliable, maintainable, and efficient C++ software. The goal is not merely to reproduce known algorithms, but to develop the judgment required to build numerical systems that endure.
+Proposals that affect the public API or introduce a new architectural layer should be discussed in an issue before implementation begins.
 
 ## License
 
-Neuroforge is distributed under the [MIT License](LICENSE).
+This project is licensed under the [MIT License](LICENSE) unless otherwise noted.
 
-Neuroforge is built patiently: one well-understood, well-tested, and well-measured layer at a time.
+---
+
+<div align="center">
+
+**Neuroforge** — numerical computing, engineered from first principles.
+
+</div>
