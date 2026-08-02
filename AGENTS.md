@@ -1,247 +1,217 @@
-# Neuroforge — Engineering Manual for AI Assistants
+# Neuroforge Engineering Constitution
 
-## Project Identity
+This document is binding. It applies to every AI coding agent — Claude, ChatGPT, Kilo, Copilot, or any other automated contributor — operating on this repository. It is not a contributor guide, and it is not optional guidance: it is the set of constraints under which all automated changes to Neuroforge are made.
 
-Neuroforge is a high-performance numerical computing engine built from first
-principles in Modern C++23. It is a long-term educational and research-oriented
-project and a vehicle for understanding systems programming,
-performance engineering, numerical computing, linear algebra, low-latency
-techniques, and reusable software infrastructure.
+If any instruction given to an agent in a specific task conflicts with this document, this document takes precedence unless a human maintainer explicitly overrides it in writing for that task.
 
-The project is educational, but it is guided by production-quality engineering
-standards. Correctness precedes optimization. Machine learning is not the
-foundation of Neuroforge; it is a future client of the numerical engine, as are
-potential quantitative-computing extensions. The objective is engineering
-excellence and documented understanding, not feature count.
+---
 
-## Hard Constraints
+## Project Vision
 
-- Use C++23 only.
-- Use the C++ standard library only unless an external dependency is explicitly
-  approved.
-- Do not use Eigen, Blaze, xtensor, Armadillo, BLAS, LAPACK, PyTorch,
-  TensorFlow, OpenCV numerical utilities, or another numerical or ML library.
-- Build mathematical, numerical, and ML primitives from first principles.
-- Prefer RAII and value semantics; do not use raw owning pointers.
-- Avoid unnecessary heap allocations, abstractions, and copies.
-- Avoid premature optimization. Every optimization requires benchmark evidence.
-- Do not silently redesign an existing API.
-- Work on one bounded feature at a time.
-- Do not prioritize rapid code generation over understanding.
+Neuroforge is a modern C++23 numerical computing library built completely from first principles. The long-term objective is to become a high-performance alternative to Eigen and Blaze — but that objective is subordinate to, not a substitute for, correctness, readability, and engineering quality.
 
-## Engineering Philosophy
+Performance is a goal Neuroforge earns over time, not a shortcut it takes early. An agent that trades correctness or clarity for speed, at any stage of this project, has misunderstood the assignment.
 
-- Prefer zero-cost abstractions: express intent without hidden runtime cost.
-- Start with the simplest correct and readable design.
-- Measure before optimizing and retain the evidence for performance decisions.
-- Build reusable, composable infrastructure rather than one-off solutions.
-- Favor deterministic behavior wherever the problem permits it.
-- Design clean, explicit APIs with clear ownership and error behavior.
-- Optimize for long-term maintainability, reviewability, and learning value.
+---
 
-## Systems Programming Principles
+## Development Philosophy
 
-- Prefer contiguous memory and make data layout a deliberate design choice.
-- Consider cache locality, data movement, and allocation behavior in every
-  performance-relevant design.
-- Keep ownership, lifetime, and mutation explicit.
-- Avoid hidden runtime cost, implicit allocation, and unnecessary indirection.
-- Minimize copies without compromising clarity or correctness.
-- Benchmark performance-critical code; do not infer performance from style.
+Every change to Neuroforge is evaluated against a strict, ordered set of priorities. A lower priority is never pursued at the expense of a higher one.
 
-## AI Development Workflow
-
-For every feature, an AI assistant must:
-
-1. Inspect the relevant project structure, code, and documentation.
-2. Explain the relevant mathematics, when applicable.
-3. Explain the required C++ concepts.
-4. Explain relevant systems concepts, such as layout, ownership, concurrency, or cache behavior.
-5. Propose a small, bounded API and implementation plan.
-6. List every file to be created or modified.
-7. Wait for explicit user approval.
-8. Implement only the approved scope.
-9. Add focused tests and build and run them.
-10. Add benchmarks when performance is a stated requirement or affected concern.
-11. Update module and decision documentation, then explain the implementation in educational detail.
-
-Do not write or modify implementation code before approval unless the user
-explicitly asks for implementation. Stop before starting the next roadmap item.
-
-## Code Conventions
-
-- Root namespace: `neuroforge`.
-- Module namespaces follow `neuroforge::<module>` (for example,
-  `neuroforge::math`). Keep nested namespaces purposeful and shallow.
-- Public headers live in `include/<module>/`; implementation units live in
-  `src/<module>/`; tests live in `tests/` and mirror public API layout.
-- Use `snake_case.hpp` for headers and `snake_case.cpp` for implementation
-  units. Use descriptive, stable names for public types and functions.
-- Use simple template declarations such as `template<typename T>` until a
-  stronger design is explicitly approved.
-- Use contiguous row-major storage for matrix-like types unless an approved
-  design documents a different layout.
-- Include order: the corresponding project header, other project headers,
-  standard-library headers, then third-party headers when approved.
-- Apply const correctness consistently. Prefer `const` member functions and
-  `const` references when mutation or ownership transfer is not intended.
-- Use `noexcept` only when it is correct, meaningful, and does not obscure the
-  API contract.
-- Use `[[nodiscard]]` for values whose accidental discard can plausibly hide an
-  error, failed operation, or important computed result.
-- Use standard-library `assert` for tests until a testing framework is
-  explicitly introduced.
-
-## Template Policy
-
-- Start with simple `template<typename T>`.
-- Do not introduce CRTP, expression templates, heavy template metaprogramming,
-  SFINAE, advanced concepts, policy classes, variadic templates, type traits,
-  or template specialization without explicit approval.
-- Numeric type constraints and C++20/23 concepts may be explored only after
-  the foundational types they constrain are stable and explicitly approved.
-
-## Numerical Comparison Policy
-
-- Do not overload `operator==` with approximate floating-point semantics unless
-  explicitly approved.
-- Design numerical comparison through an explicit API, such as `is_close`, with
-  documented absolute and relative tolerances.
-
-## Benchmark Policy
-
-Every optimization must follow this sequence:
-
-```text
-Baseline
-  ↓
-Benchmark
-  ↓
-Profile
-  ↓
-Optimize
-  ↓
-Benchmark Again
+```
+Correctness
+    ↓
+Clean API Design
+    ↓
+Testing
+    ↓
+Documentation
+    ↓
+Optimization
+    ↓
+Memory Optimization
+    ↓
+Cache Optimization
+    ↓
+SIMD
+    ↓
+Parallelism
+    ↓
+Low Latency
 ```
 
-Never optimize without measurement. Benchmark methodology, inputs, environment,
-and results belong in the benchmark and decision documentation when they inform
-an engineering choice.
+Never optimize prematurely. If a task description asks an agent to optimize something before its correctness, API, tests, and documentation are settled, the agent should complete those first and flag the ordering, rather than optimize out of sequence.
+
+---
+
+## Coding Standards
+
+All code written or modified by an agent must conform to the following:
+
+- **C++23 only.** No legacy idioms where a modern equivalent exists; no reliance on pre-C++23 workarounds.
+- **STL only.** No third-party dependencies for functionality the STL already provides.
+- **No raw owning pointers.** Ownership is expressed through RAII types (`std::unique_ptr`, `std::shared_ptr`, containers, value types) — never a raw pointer that owns a resource.
+- **Prefer RAII.** Every resource's lifetime is tied to an object's lifetime.
+- **Rule of Five.** Any type managing a resource explicitly defines or explicitly deletes all five special member functions.
+- **Templates.** Generic code is written with templates, following STL conventions for template parameter naming and constraints.
+- **Exception safety.** At minimum, the strong exception safety guarantee for operations where it is achievable; never leave an object in a half-modified state on failure.
+- **Const correctness.** `const` is applied everywhere it is semantically correct, with no exceptions for convenience.
+- **`[[nodiscard]]` where appropriate.** Applied to any function whose return value must not be silently discarded (factory functions, query functions, error-carrying returns).
+- **`noexcept` only when correct.** Never applied speculatively; only when the function genuinely cannot throw.
+- **Row-major storage.** All matrix and container storage layouts follow row-major order unless a specific module documents and justifies an exception.
+- **No macros unless necessary.** Macros are a last resort, used only where the language provides no alternative (e.g., certain portability concerns).
+- **No comments unless requested.** Code should be self-explanatory through naming and structure; comments are added only when a human maintainer or task explicitly asks for them, or when a genuinely non-obvious invariant must be recorded.
+- **Header/implementation separation.** Template implementations are separated using `.hpp`/`.tpp` pairs, keeping public interfaces readable independent of their implementation detail.
+
+---
+
+## Repository Structure
+
+| Directory | Purpose |
+|---|---|
+| `include/` | Public, header-only library headers. This is the library's public API surface — anything here is a contract with users. |
+| `src/` | Implementation for any components that are not header-only. |
+| `tests/` | Unit tests, mirroring the structure of `include/`. Every public component has a corresponding test file. |
+| `docs/` | Design notes, API documentation, and sprint records. |
+| `examples/` | Standalone, buildable usage examples kept in sync with the current public API. |
+| `benchmarks/` | Benchmark suites, introduced once a component reaches the optimization stages of the [Development Philosophy](#development-philosophy). |
+| `cmake/` | CMake modules and build configuration helpers. |
+
+An agent should not introduce new top-level directories without explicit instruction — new functionality is placed within the existing structure unless a maintainer directs otherwise.
+
+---
+
+## API Design Rules
+
+Every new public API must satisfy all of the following before it is considered complete:
+
+- **Simple.** The smallest interface that solves the problem, not the most general one that could conceivably solve it.
+- **Predictable.** Behavior follows from the name and signature without needing to read the implementation.
+- **STL-like.** Naming, iterator conventions, and semantics follow established STL patterns wherever they apply.
+- **Consistent naming.** New APIs follow the naming conventions already established elsewhere in the codebase.
+- **Minimal surprise.** No hidden allocations, no unexpected ownership transfers, no behavior that a reasonable caller would not anticipate from the signature.
+- **Future SIMD-friendly.** Data layout and access patterns do not foreclose a future SIMD backend.
+- **Future cache-friendly.** Layout decisions consider cache behavior even before cache optimization is the active roadmap phase.
+
+Implementation details are never exposed through the public API. If an agent finds itself exposing an internal type, storage detail, or algorithm choice to satisfy a task, it should stop and raise the design question rather than proceed.
+
+---
 
 ## Testing Policy
 
-- Every module must include focused tests for its public behavior.
-- No feature is complete without tests.
-- Tests should cover normal behavior, boundary conditions, and documented error
-  behavior relevant to the feature.
-- Build and run the relevant tests before reporting completion.
+A feature is not complete until it has passed through every stage below, in order:
 
-## Documentation Policy
+1. **API** — the public interface is designed and reviewed against the [API Design Rules](#api-design-rules).
+2. **Implementation** — the feature is implemented against that API.
+3. **Unit Tests** — tests are written covering the feature's behavior, including edge cases and failure modes.
+4. **Build** — the project builds cleanly, without new warnings, on the supported compilers.
+5. **CTest** — the full test suite passes via CTest, not just the tests for the new feature.
+6. **Review** — the change is reviewed against this document before being considered done.
 
-Every module must document:
+No feature is complete until its tests pass. An agent must never report a task as finished while tests are failing, skipped, or not yet written.
 
-- Purpose
-- Architecture
-- Design decisions
-- Complexity
-- Memory layout
-- Future work
-- Known limitations
+---
 
-Keep module-level documentation close to the module and record cross-cutting or
-significant decisions in `docs/decisions.md`.
+## Review Policy
+
+Every completed sprint is reviewed against the following, regardless of how small the sprint's scope was:
+
+- **Build review** — does the project build cleanly on all supported compilers?
+- **API review** — does every new or changed API satisfy the [API Design Rules](#api-design-rules)?
+- **Performance review** — has any performance-relevant change been measured, not assumed?
+- **Exception safety review** — does every operation uphold its stated exception safety guarantee?
+- **Const correctness review** — is `const` applied everywhere it should be?
+- **Modern C++ review** — does the code use C++23 idioms rather than legacy patterns?
+- **Final PR review** — does the change, as a whole, belong in this sprint and this sprint only?
+
+An agent completing a sprint should walk through this list explicitly before declaring the sprint done.
+
+---
 
 ## Git Workflow
 
-Use focused feature branches, such as:
+All work follows this sequence, without exception:
 
-- `feature/matrix`
-- `feature/memory`
-- `feature/runtime`
-- `feature/numerical`
-- `feature/benchmarks`
-- `feature/ml`
-- `feature/quant`
-
-Before merging a feature branch, ensure that tests pass, documentation is
-updated, and benchmarks are included when the change is performance-related.
-
-## Commit Convention
-
-Use concise, scoped commit prefixes:
-
-- `docs:`
-- `build:`
-- `core:`
-- `memory:`
-- `math:`
-- `runtime:`
-- `bench:`
-- `perf:`
-- `test:`
-- `refactor:`
-- `ci:`
-
-## Module Roadmap
-
-### Current Module
-
-| Module | Focus | Status |
-| --- | --- | --- |
-| Module 1 | Core Infrastructure | Current: repository, build, documentation, and engineering foundations |
-
-### Future Modules
-
-| Module | Focus |
-| --- | --- |
-| Module 2 | Memory Engine |
-| Module 3 | Math Engine |
-| Module 4 | Numerical Algorithms |
-| Module 5 | Benchmark Suite |
-| Module 6 | Runtime |
-| Module 7 | Machine Learning |
-| Module 8 | Quantitative Computing Extensions |
-
-### Out-of-Scope Modules
-
-Production deployment systems, hardware-specific backends, and additional
-domain libraries are out of scope unless explicitly added to the roadmap. A
-future module does not authorize implementation before its scope is approved.
-
-## Never Do
-
-Never:
-
-- redesign APIs silently;
-- introduce hidden allocations;
-- optimize before benchmarks;
-- add unnecessary abstractions;
-- add dependencies without approval;
-- implement multiple unrelated features in one change; or
-- sacrifice readability for cleverness.
-
-## Engineering Workflow
-
-```text
-Understand Mathematics
-  ↓
-Understand C++
-  ↓
-Understand Systems
-  ↓
-Design
-  ↓
-Implement
-  ↓
-Test
-  ↓
-Benchmark
-  ↓
-Profile
-  ↓
-Optimize
-  ↓
-Document
-  ↓
-Commit
 ```
+Feature
+   ↓
+Build
+   ↓
+CTest
+   ↓
+Review
+   ↓
+Commit
+   ↓
+Push
+```
+
+Never commit code that does not build. Never push code that fails tests. If an agent cannot get a change to build or pass tests within the scope of its current task, it should stop and report the failure rather than commit around it.
+
+---
+
+## Roadmap
+
+The current roadmap, in sprint order:
+
+| Sprint | Scope |
+|---|---|
+| 1 | Constructors |
+| 2 | Rule of Five |
+| 3 | Element Access |
+| 4 | Container Utilities |
+| 5 | Scalar Operators |
+| 6 | Comparison Operators |
+| 7 | Arithmetic Operators |
+| 8 | Matrix Multiplication, Unary Minus, Transpose, Identity, Zeros, Ones, Constant Matrix |
+| 9 | Views, Row APIs, Column APIs, Block APIs |
+| 10 | Matrix API Freeze |
+| 11 | Linear Algebra |
+
+Beyond Sprint 11, the roadmap moves into the later stages of the [Development Philosophy](#development-philosophy):
+
+```
+Memory Optimization
+      ↓
+Cache Optimization
+      ↓
+SIMD
+      ↓
+Parallelism
+      ↓
+Low Latency
+```
+
+This roadmap is the authoritative source of what an agent should be working on. Any task that does not map to the current sprint should be treated as out of scope unless a maintainer explicitly says otherwise.
+
+---
+
+## AI Agent Rules
+
+Every AI agent operating on this repository must:
+
+- Never rewrite unrelated code.
+- Never refactor outside the current sprint.
+- Never introduce external libraries.
+- Never optimize prematurely.
+- Never skip tests.
+- Never change public APIs without explanation.
+- Never silently modify formatting rules.
+- Never change CMake configuration unless required by the current task.
+- Never modify the roadmap without explicit maintainer approval.
+
+Every AI agent operating on this repository must always:
+
+- Finish one sprint before starting another.
+- Explain engineering decisions — a change without a stated rationale is treated as incomplete.
+- Preserve backward compatibility unless explicitly instructed otherwise.
+
+These rules exist because an agent working faster than a human reviewer can verify is a liability, not an asset, unless it is constrained to move in small, explainable, reversible steps.
+
+---
+
+## Design Principle
+
+Neuroforge is being built to teach engineering, not only to produce code. Every implementation should maximize clarity, maintainability, and future extensibility over raw expedience.
+
+The repository is intended to eventually serve as a learning resource for developers interested in numerical computing, modern C++, library design, and high-performance computing. Every agent contributing to it — human or automated — is contributing to that resource, and is held to the standard that implies: code here should be worth reading, not just worth running.

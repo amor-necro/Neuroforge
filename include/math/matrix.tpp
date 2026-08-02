@@ -267,6 +267,31 @@ Matrix<T>& Matrix<T>::operator/=(const T& scalar)
     return *this;
 }
 
+template<typename T>
+Matrix<T> Matrix<T>::operator*(const Matrix<T>& other) const
+{
+    if (cols_ != other.rows_)
+    {
+        throw std::invalid_argument(
+            "Matrix multiplication: incompatible dimensions");
+    }
+
+    Matrix result(rows_, other.cols_);
+    for (std::size_t i = 0; i < rows_; ++i)
+    {
+        for (std::size_t j = 0; j < other.cols_; ++j)
+        {
+            T sum{};
+            for (std::size_t k = 0; k < cols_; ++k)
+            {
+                sum += (*this)(i, k) * other(k, j);
+            }
+            result(i, j) = sum;
+        }
+    }
+    return result;
+}
+
 //==================================================
 // Capacity Implementations
 //==================================================
@@ -413,4 +438,70 @@ template<typename T>
 bool Matrix<T>::empty() const noexcept
 {
     return data_.empty();
+}
+
+//==================================================
+// Unary Operator Implementations
+//==================================================
+
+template<typename T>
+Matrix<T> Matrix<T>::operator-() const
+{
+    Matrix result(rows_, cols_);
+    for (std::size_t i = 0; i < data_.size(); ++i)
+    {
+        result.data_[i] = -data_[i];
+    }
+    return result;
+}
+
+//==================================================
+// Transpose Implementation
+//==================================================
+
+template<typename T>
+Matrix<T> Matrix<T>::transpose() const
+{
+    Matrix result(cols_, rows_);
+    for (std::size_t i = 0; i < rows_; ++i)
+    {
+        for (std::size_t j = 0; j < cols_; ++j)
+        {
+            result(j, i) = (*this)(i, j);
+        }
+    }
+    return result;
+}
+
+//==================================================
+// Factory Implementations
+//==================================================
+
+template<typename T>
+Matrix<T> Matrix<T>::identity(std::size_t n)
+{
+    Matrix result(n, n, T(0));
+    for (std::size_t i = 0; i < n; ++i)
+    {
+        result(i, i) = T(1);
+    }
+    return result;
+}
+
+template<typename T>
+Matrix<T> Matrix<T>::zeros(std::size_t rows, std::size_t cols)
+{
+    return Matrix(rows, cols, T(0));
+}
+
+template<typename T>
+Matrix<T> Matrix<T>::ones(std::size_t rows, std::size_t cols)
+{
+    return Matrix(rows, cols, T(1));
+}
+
+template<typename T>
+Matrix<T> Matrix<T>::constant(std::size_t rows, std::size_t cols, const T& value)
+{
+    return Matrix(rows, cols, value);
 }

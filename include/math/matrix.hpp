@@ -119,9 +119,17 @@ public:
 
     Matrix operator/(const T& scalar) const;
 
-    Matrix& operator*=(const T& scalar);
+     Matrix& operator*=(const T& scalar);
 
-    Matrix& operator/=(const T& scalar);
+     Matrix& operator/=(const T& scalar);
+
+      Matrix operator*(const Matrix& other) const;
+
+    [[nodiscard]]
+    Matrix operator-() const;
+
+    [[nodiscard]]
+    Matrix transpose() const;
 
 
     // Iterators
@@ -160,6 +168,17 @@ public:
 
     [[nodiscard]]
     bool empty() const noexcept;
+
+
+    // Factories
+
+    static Matrix identity(std::size_t n);
+
+    static Matrix zeros(std::size_t rows, std::size_t cols);
+
+    static Matrix ones(std::size_t rows, std::size_t cols);
+
+    static Matrix constant(std::size_t rows, std::size_t cols, const T& value);
 };
 
 #include "matrix.tpp"

@@ -1291,6 +1291,571 @@ void test_scalar_operators_const_matrix()
     assert((A / 2) == Matrix<int>(2, 2, 2));
 }
 
+void test_matrix_multiplication_basic()
+{
+    Matrix<int> A(2,2);
+    Matrix<int> B(2,2);
+    A(0,0)=1;
+    A(0,1)=2;
+    A(1,0)=3;
+    A(1,1)=4;
+
+    B(0,0)=5;
+    B(0,1)=6;
+    B(1,0)=7;
+    B(1,1)=8;
+
+    Matrix<int> C = A * B;
+
+    assert(C(0,0)==19);
+    assert(C(0,1)==22);
+    assert(C(1,0)==43);
+    assert(C(1,1)==50);
+}
+void test_matrix_multiplication_identity()
+{
+    Matrix<int> A(2,2);
+    Matrix<int> I(2,2);
+    A(0,0)=1;
+    A(0,1)=2;
+    A(1,0)=3;
+    A(1,1)=4;
+
+    I(0,0)=1;
+    I(0,1)=0;
+    I(1,0)=0;
+    I(1,1)=1;
+    Matrix<int>C1=A*I;
+    Matrix<int>C2=I*A;
+    assert(C1==A);
+    assert(C2==A);
+}
+
+
+void test_matrix_multiplication_zero()
+{
+    Matrix<int> A(2, 2, 0);
+    A(0, 0) = 1;
+    A(0, 1) = 2;
+    A(1, 0) = 3;
+    A(1, 1) = 4;
+
+    Matrix<int> Z(2, 2, 0);
+    Matrix<int> C = A * Z;
+    assert(C == Z);
+}
+
+
+void test_matrix_multiplication_single_element()
+{
+    Matrix<int> A(1, 1, 5);
+    Matrix<int> B(1, 1, 7);
+    Matrix<int> C = A * B;
+    assert(C(0, 0) == 35);
+}
+
+
+void test_matrix_multiplication_rectangular()
+{
+    Matrix<int> A(2, 3, 0);
+    A(0, 0) = 1;
+    A(0, 1) = 2;
+    A(0, 2) = 3;
+    A(1, 0) = 4;
+    A(1, 1) = 5;
+    A(1, 2) = 6;
+
+    Matrix<int> B(3, 2, 0);
+    B(0, 0) = 7;
+    B(0, 1) = 8;
+    B(1, 0) = 9;
+    B(1, 1) = 10;
+    B(2, 0) = 11;
+    B(2, 1) = 12;
+
+    Matrix<int> C = A * B;
+    assert(C.rows() == 2);
+    assert(C.cols() == 2);
+    assert(C(0, 0) == 58);
+    assert(C(0, 1) == 64);
+    assert(C(1, 0) == 139);
+    assert(C(1, 1) == 154);
+}
+
+
+void test_matrix_multiplication_dimension_mismatch()
+{
+    Matrix<int> A(2, 3, 1);
+    Matrix<int> B(2, 2, 1);
+    bool threw = false;
+    try
+    {
+        A * B;
+    }
+    catch (const std::invalid_argument&)
+    {
+        threw = true;
+    }
+    assert(threw);
+}
+
+
+void test_matrix_multiplication_const_matrix()
+{
+    Matrix<int> A(2, 2, 0);
+    A(0, 0) = 2;
+    A(0, 1) = 3;
+    A(1, 0) = 4;
+    A(1, 1) = 5;
+
+    Matrix<int> B(2, 2, 0);
+    B(0, 0) = 1;
+    B(0, 1) = 0;
+    B(1, 0) = 0;
+    B(1, 1) = 1;
+
+    const Matrix<int>& CA = A;
+    const Matrix<int>& CB = B;
+    Matrix<int> C = CA * CB;
+    assert(C(0, 0) == 2);
+    assert(C(0, 1) == 3);
+    assert(C(1, 0) == 4);
+    assert(C(1, 1) == 5);
+}
+
+
+void test_matrix_multiplication_large()
+{
+    Matrix<int> A(50, 50, 1);
+    Matrix<int> B(50, 50, 1);
+    Matrix<int> C = A * B;
+    assert(C.rows() == 50);
+    assert(C.cols() == 50);
+    assert(C.size() == 2500);
+    assert(C(0, 0) == 50);
+    assert(C(0, 49) == 50);
+    assert(C(49, 0) == 50);
+    assert(C(49, 49) == 50);
+}
+
+
+void test_matrix_multiplication_empty()
+{
+    Matrix<int> A;
+    Matrix<int> B;
+    Matrix<int> C = A * B;
+    assert(C.empty());
+    assert(C.rows() == 0);
+    assert(C.cols() == 0);
+}
+
+
+void test_matrix_multiplication_negative_values()
+{
+    Matrix<int> A(2, 2, 0);
+    A(0, 0) = -1;
+    A(0, 1) = -2;
+    A(1, 0) = -3;
+    A(1, 1) = -4;
+
+    Matrix<int> B(2, 2, 0);
+    B(0, 0) = -5;
+    B(0, 1) = -6;
+    B(1, 0) = -7;
+    B(1, 1) = -8;
+
+    Matrix<int> C = A * B;
+    assert(C(0, 0) == 19);
+    assert(C(0, 1) == 22);
+    assert(C(1, 0) == 43);
+    assert(C(1, 1) == 50);
+}
+
+
+void test_matrix_multiplication_row_col_vector()
+{
+    Matrix<int> A(1, 3, 0);
+    A(0, 0) = 1;
+    A(0, 1) = 2;
+    A(0, 2) = 3;
+
+    Matrix<int> B(3, 1, 0);
+    B(0, 0) = 4;
+    B(1, 0) = 5;
+    B(2, 0) = 6;
+
+    Matrix<int> C = A * B;
+    assert(C.rows() == 1);
+    assert(C.cols() == 1);
+    assert(C(0, 0) == 32);
+}
+
+
+void test_matrix_multiplication_col_row_vector()
+{
+    Matrix<int> A(3, 1, 0);
+    A(0, 0) = 1;
+    A(1, 0) = 2;
+    A(2, 0) = 3;
+
+    Matrix<int> B(1, 3, 0);
+    B(0, 0) = 4;
+    B(0, 1) = 5;
+    B(0, 2) = 6;
+
+    Matrix<int> C = A * B;
+    assert(C.rows() == 3);
+    assert(C.cols() == 3);
+    assert(C(0, 0) == 4);
+    assert(C(0, 1) == 5);
+    assert(C(0, 2) == 6);
+    assert(C(1, 0) == 8);
+    assert(C(1, 1) == 10);
+    assert(C(1, 2) == 12);
+    assert(C(2, 0) == 12);
+    assert(C(2, 1) == 15);
+    assert(C(2, 2) == 18);
+}
+
+
+// Unary Minus
+
+
+void test_unary_minus_basic()
+{
+    Matrix<int> A(2, 2, 0);
+    A(0, 0) = 1;
+    A(0, 1) = 2;
+    A(1, 0) = 3;
+    A(1, 1) = 4;
+
+    Matrix<int> B = -A;
+    assert(B(0, 0) == -1);
+    assert(B(0, 1) == -2);
+    assert(B(1, 0) == -3);
+    assert(B(1, 1) == -4);
+}
+
+
+void test_unary_minus_negative_values()
+{
+    Matrix<int> A(2, 2, 0);
+    A(0, 0) = -5;
+    A(0, 1) = -3;
+    A(1, 0) = -1;
+    A(1, 1) = -4;
+
+    Matrix<int> B = -A;
+    assert(B(0, 0) == 5);
+    assert(B(0, 1) == 3);
+    assert(B(1, 0) == 1);
+    assert(B(1, 1) == 4);
+}
+
+
+void test_unary_minus_zero()
+{
+    Matrix<int> A(2, 2, 0);
+    Matrix<int> B = -A;
+    assert(B(0, 0) == 0);
+    assert(B(0, 1) == 0);
+    assert(B(1, 0) == 0);
+    assert(B(1, 1) == 0);
+}
+
+
+void test_unary_minus_empty()
+{
+    Matrix<int> A;
+    Matrix<int> B = -A;
+    assert(B.empty());
+}
+
+
+void test_unary_minus_const()
+{
+    Matrix<int> A(2, 2, 0);
+    A(0, 0) = 3;
+    A(0, 1) = -1;
+    A(1, 0) = 4;
+    A(1, 1) = -2;
+
+    const Matrix<int>& CA = A;
+    Matrix<int> B = -CA;
+    assert(B(0, 0) == -3);
+    assert(B(0, 1) == 1);
+    assert(B(1, 0) == -4);
+    assert(B(1, 1) == 2);
+}
+
+
+void test_unary_minus_double_negation()
+{
+    Matrix<int> A(2, 2, 0);
+    A(0, 0) = 1;
+    A(0, 1) = -2;
+    A(1, 0) = 3;
+    A(1, 1) = -4;
+
+    Matrix<int> B = -(-A);
+    assert(B == A);
+}
+
+
+// Transpose
+
+
+void test_transpose_square()
+{
+    Matrix<int> A(2, 2, 0);
+    A(0, 0) = 1;
+    A(0, 1) = 2;
+    A(1, 0) = 3;
+    A(1, 1) = 4;
+
+    Matrix<int> B = A.transpose();
+    assert(B.rows() == 2);
+    assert(B.cols() == 2);
+    assert(B(0, 0) == 1);
+    assert(B(0, 1) == 3);
+    assert(B(1, 0) == 2);
+    assert(B(1, 1) == 4);
+}
+
+
+void test_transpose_rectangular()
+{
+    Matrix<int> A(2, 3, 0);
+    A(0, 0) = 1;
+    A(0, 1) = 2;
+    A(0, 2) = 3;
+    A(1, 0) = 4;
+    A(1, 1) = 5;
+    A(1, 2) = 6;
+
+    Matrix<int> B = A.transpose();
+    assert(B.rows() == 3);
+    assert(B.cols() == 2);
+    assert(B(0, 0) == 1);
+    assert(B(0, 1) == 4);
+    assert(B(1, 0) == 2);
+    assert(B(1, 1) == 5);
+    assert(B(2, 0) == 3);
+    assert(B(2, 1) == 6);
+}
+
+
+void test_transpose_double()
+{
+    Matrix<int> A(2, 3, 0);
+    A(0, 0) = 1;
+    A(0, 1) = 2;
+    A(0, 2) = 3;
+    A(1, 0) = 4;
+    A(1, 1) = 5;
+    A(1, 2) = 6;
+
+    Matrix<int> B = A.transpose().transpose();
+    assert(B == A);
+}
+
+
+void test_transpose_empty()
+{
+    Matrix<int> A;
+    Matrix<int> B = A.transpose();
+    assert(B.empty());
+}
+
+
+void test_transpose_const()
+{
+    Matrix<int> A(2, 2, 0);
+    A(0, 0) = 1;
+    A(0, 1) = 2;
+    A(1, 0) = 3;
+    A(1, 1) = 4;
+
+    const Matrix<int>& CA = A;
+    Matrix<int> B = CA.transpose();
+    assert(B(0, 0) == 1);
+    assert(B(0, 1) == 3);
+    assert(B(1, 0) == 2);
+    assert(B(1, 1) == 4);
+}
+
+
+void test_transpose_single_element()
+{
+    Matrix<int> A(1, 1, 42);
+    Matrix<int> B = A.transpose();
+    assert(B(0, 0) == 42);
+}
+
+
+// Factories: identity()
+
+
+void test_identity_size()
+{
+    Matrix<int> I = Matrix<int>::identity(3);
+    assert(I.rows() == 3);
+    assert(I.cols() == 3);
+}
+
+
+void test_identity_diagonal()
+{
+    Matrix<int> I = Matrix<int>::identity(3);
+    assert(I(0, 0) == 1);
+    assert(I(1, 1) == 1);
+    assert(I(2, 2) == 1);
+}
+
+
+void test_identity_non_diagonal()
+{
+    Matrix<int> I = Matrix<int>::identity(3);
+    assert(I(0, 1) == 0);
+    assert(I(0, 2) == 0);
+    assert(I(1, 0) == 0);
+    assert(I(1, 2) == 0);
+    assert(I(2, 0) == 0);
+    assert(I(2, 1) == 0);
+}
+
+
+void test_identity_n1()
+{
+    Matrix<int> I = Matrix<int>::identity(1);
+    assert(I.rows() == 1);
+    assert(I.cols() == 1);
+    assert(I(0, 0) == 1);
+}
+
+
+void test_identity_n0()
+{
+    Matrix<int> I = Matrix<int>::identity(0);
+    assert(I.empty());
+}
+
+
+void test_identity_multiplicative()
+{
+    Matrix<int> A(2, 3, 2);
+    Matrix<int> I2 = Matrix<int>::identity(2);
+    Matrix<int> I3 = Matrix<int>::identity(3);
+
+    Matrix<int> C1 = I2 * A;
+    assert(C1 == A);
+
+    Matrix<int> C2 = A * I3;
+    assert(C2 == A);
+}
+
+
+// Factories: zeros()
+
+
+void test_zeros_dimensions()
+{
+    Matrix<int> Z = Matrix<int>::zeros(2, 3);
+    assert(Z.rows() == 2);
+    assert(Z.cols() == 3);
+}
+
+
+void test_zeros_values()
+{
+    Matrix<int> Z = Matrix<int>::zeros(2, 2);
+    assert(Z(0, 0) == 0);
+    assert(Z(0, 1) == 0);
+    assert(Z(1, 0) == 0);
+    assert(Z(1, 1) == 0);
+}
+
+
+void test_zeros_empty()
+{
+    Matrix<int> Z = Matrix<int>::zeros(0, 0);
+    assert(Z.empty());
+}
+
+
+// Factories: ones()
+
+
+void test_ones_dimensions()
+{
+    Matrix<int> O = Matrix<int>::ones(2, 3);
+    assert(O.rows() == 2);
+    assert(O.cols() == 3);
+}
+
+
+void test_ones_values()
+{
+    Matrix<int> O = Matrix<int>::ones(2, 2);
+    assert(O(0, 0) == 1);
+    assert(O(0, 1) == 1);
+    assert(O(1, 0) == 1);
+    assert(O(1, 1) == 1);
+}
+
+
+void test_ones_empty()
+{
+    Matrix<int> O = Matrix<int>::ones(0, 0);
+    assert(O.empty());
+}
+
+
+// Factories: constant()
+
+
+void test_constant_dimensions()
+{
+    Matrix<int> C = Matrix<int>::constant(2, 3, 7);
+    assert(C.rows() == 2);
+    assert(C.cols() == 3);
+}
+
+
+void test_constant_values()
+{
+    Matrix<int> C = Matrix<int>::constant(2, 2, 9);
+    assert(C(0, 0) == 9);
+    assert(C(0, 1) == 9);
+    assert(C(1, 0) == 9);
+    assert(C(1, 1) == 9);
+}
+
+
+void test_constant_negative()
+{
+    Matrix<int> C = Matrix<int>::constant(2, 2, -5);
+    assert(C(0, 0) == -5);
+    assert(C(0, 1) == -5);
+    assert(C(1, 0) == -5);
+    assert(C(1, 1) == -5);
+}
+
+
+void test_constant_zero()
+{
+    Matrix<int> C = Matrix<int>::constant(2, 2, 0);
+    Matrix<int> Z = Matrix<int>::zeros(2, 2);
+    assert(C == Z);
+}
+
+
+void test_constant_empty()
+{
+    Matrix<int> C = Matrix<int>::constant(0, 0, 5);
+    assert(C.empty());
+}
+
 
 int main()
 {
@@ -1384,6 +1949,46 @@ int main()
     test_compound_scalar_divide();
     test_scalar_operators_empty_matrix();
     test_scalar_operators_const_matrix();
+    test_matrix_multiplication_basic();
+    test_matrix_multiplication_zero();
+    test_matrix_multiplication_single_element();
+    test_matrix_multiplication_rectangular();
+    test_matrix_multiplication_dimension_mismatch();
+    test_matrix_multiplication_const_matrix();
+    test_matrix_multiplication_large();
+    test_matrix_multiplication_empty();
+    test_matrix_multiplication_negative_values();
+    test_matrix_multiplication_row_col_vector();
+    test_matrix_multiplication_col_row_vector();
+    test_unary_minus_basic();
+    test_unary_minus_negative_values();
+    test_unary_minus_zero();
+    test_unary_minus_empty();
+    test_unary_minus_const();
+    test_unary_minus_double_negation();
+    test_transpose_square();
+    test_transpose_rectangular();
+    test_transpose_double();
+    test_transpose_empty();
+    test_transpose_const();
+    test_transpose_single_element();
+    test_identity_size();
+    test_identity_diagonal();
+    test_identity_non_diagonal();
+    test_identity_n1();
+    test_identity_n0();
+    test_identity_multiplicative();
+    test_zeros_dimensions();
+    test_zeros_values();
+    test_zeros_empty();
+    test_ones_dimensions();
+    test_ones_values();
+    test_ones_empty();
+    test_constant_dimensions();
+    test_constant_values();
+    test_constant_negative();
+    test_constant_zero();
+    test_constant_empty();
 
     std::cout << "All Matrix tests passed!\n";
     return 0;
