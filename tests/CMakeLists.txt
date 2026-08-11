@@ -13,3 +13,11 @@ target_link_libraries(matrix_test PRIVATE Neuroforge::neuroforge)
 neuroforge_enable_warnings(matrix_test)
 
 add_test(NAME matrix_test COMMAND matrix_test)
+
+add_executable(matrix_view_test matrix_view_test.cpp)
+
+target_link_libraries(matrix_view_test PRIVATE Neuroforge::neuroforge)
+
+neuroforge_enable_warnings(matrix_view_test)
+
+add_test(NAME matrix_view_test COMMAND matrix_view_test)

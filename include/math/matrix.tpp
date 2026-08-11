@@ -112,6 +112,80 @@ const T* Matrix<T>::data() const noexcept
 }
 
 //==================================================
+// Row View Implementations
+//==================================================
+
+template<typename T>
+MatrixView<T> Matrix<T>::row(std::size_t row)
+{
+    assert(row < rows_);
+
+    return MatrixView<T>(data() + (row * cols_), 1, cols_, cols_);
+}
+
+template<typename T>
+MatrixView<const T> Matrix<T>::row(std::size_t row) const
+{
+    assert(row < rows_);
+
+    return MatrixView<const T>(data() + (row * cols_), 1, cols_, cols_);
+}
+
+//==================================================
+// Column View Implementations
+//==================================================
+
+template<typename T>
+MatrixView<T> Matrix<T>::column(std::size_t col)
+{
+    assert(col < cols_);
+
+    return MatrixView<T>(data() + col, rows_, 1, cols_);
+}
+
+template<typename T>
+MatrixView<const T> Matrix<T>::column(std::size_t col) const
+{
+    assert(col < cols_);
+
+    return MatrixView<const T>(data() + col, rows_, 1, cols_);
+}
+
+//==================================================
+// Block View Implementations
+//==================================================
+
+template<typename T>
+MatrixView<T> Matrix<T>::block(std::size_t start_row,
+                                std::size_t start_col,
+                                std::size_t block_rows,
+                                std::size_t block_cols)
+{
+    assert(start_row < rows_);
+    assert(start_col < cols_);
+    assert(start_row + block_rows <= rows_);
+    assert(start_col + block_cols <= cols_);
+
+    return MatrixView<T>(data() + (start_row * cols_) + start_col,
+                         block_rows, block_cols, cols_);
+}
+
+template<typename T>
+MatrixView<const T> Matrix<T>::block(std::size_t start_row,
+                                      std::size_t start_col,
+                                      std::size_t block_rows,
+                                      std::size_t block_cols) const
+{
+    assert(start_row < rows_);
+    assert(start_col < cols_);
+    assert(start_row + block_rows <= rows_);
+    assert(start_col + block_cols <= cols_);
+
+    return MatrixView<const T>(data() + (start_row * cols_) + start_col,
+                               block_rows, block_cols, cols_);
+}
+
+//==================================================
 // Modifier Implementations
 //==================================================
 

@@ -7,6 +7,8 @@
 #include <utility>
 #include <vector>
 
+#include "matrix_view.hpp"
+
 namespace neuroforge::math
 {
 
@@ -36,7 +38,7 @@ public:
 
     ~Matrix() = default;
 
-    Matrix(const Matrix&) = default;
+    Matrix(const Matrix&) = default;   //value simentaics are following 
 
     Matrix& operator=(const Matrix&) = default;
 
@@ -70,6 +72,39 @@ public:
     T* data() noexcept;
 
     const T* data() const noexcept;
+
+
+    // Row Views
+
+    [[nodiscard]]
+    MatrixView<T> row(std::size_t row);
+
+    [[nodiscard]]
+    MatrixView<const T> row(std::size_t row) const;
+
+
+    // Column Views
+
+    [[nodiscard]]
+    MatrixView<T> column(std::size_t col);
+
+    [[nodiscard]]
+    MatrixView<const T> column(std::size_t col) const;
+
+
+    // Block Views
+
+    [[nodiscard]]
+    MatrixView<T> block(std::size_t start_row,
+                        std::size_t start_col,
+                        std::size_t block_rows,
+                        std::size_t block_cols);
+
+    [[nodiscard]]
+    MatrixView<const T> block(std::size_t start_row,
+                              std::size_t start_col,
+                              std::size_t block_rows,
+                              std::size_t block_cols) const;
 
 
     // Modifiers
